@@ -1,8 +1,8 @@
 define(function () {
     /**
      * Dummy LifeMap (not for big numbers)
-     * @param {Number} mapWidth
-     * @param {Number} mapHeight
+     * @param {Number} mapWidth Max universe width
+     * @param {Number} mapHeight Max universe height
      * @constructor
      */
     var LifeMap = function (mapWidth, mapHeight) {
@@ -54,17 +54,17 @@ define(function () {
     };
 
     /**
-     * Cell state
+     * Is cell alive
      * @param {Number} x
      * @param {Number} y
-     * @param {Boolean} [state] If passed, set state
+     * @param {Boolean} [status] If passed, set alive status
      * @returns {Boolean}
      */
-    LifeMap.prototype.state = function (x, y, state) {
+    LifeMap.prototype.isAlive = function (x, y, status) {
         if (x < 0 || x > this.width() || y < 0 || y > this.height()) {
             return false;
-        } else if (state !== undefined) {
-            this._container[x][y] = state;
+        } else if (status !== undefined) {
+            this._container[x][y] = status;
             if (x < this._minX) {
                 this._minX = x;
             }

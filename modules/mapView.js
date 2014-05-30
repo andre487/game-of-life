@@ -1,5 +1,12 @@
 define(function () {
     'use strict';
+
+    /**
+     * View for the life map, render cells status in the canvas
+     * @param {String} canvasId
+     * @param {Object} lifeMap
+     * @constructor
+     */
     var MapView = function (canvasId, lifeMap) {
         this._canvas = document.getElementById(canvasId);
         this._context = this._canvas.getContext('2d');
@@ -30,6 +37,7 @@ define(function () {
         this._state = MapView.state.INIT;
     };
 
+    //noinspection JSValidateTypes
     MapView.state = {
         INIT: 'init',
         RENDERED: 'rendered',
@@ -39,6 +47,17 @@ define(function () {
     MapView.CELL_WIDTH = 10;
     MapView.CELL_HEIGHT = 10;
 
+    /**
+     * View state
+     * @returns {String}
+     */
+    MapView.prototype.state = function () {
+        return this._state;
+    };
+
+    /**
+     * Render the map view
+     */
     MapView.prototype.render = function () {
         this._context.clearRect(0, 0, this._canvasWidth, this._canvasHeight);
         var i = this._cellsVerticalOffset,
@@ -48,12 +67,16 @@ define(function () {
             j = this._cellsHorizontalOffset;
             n = j + this._cellsByHorizontal;
             for (; j < n; ++j) {
-                this._setCellState(i, j, this._lifeMap.state(i, j));
+                this._setCellState(i, j, this._lifeMap.isAlive(i, j));
             }
         }
         this._state = MapView.state.RENDERED;
     };
 
+    /**
+     * Begin user input: in this mode user can set cells
+     * into a universe
+     */
     MapView.prototype.beginInput = function () {
         if (this._state !== MapView.state.RENDERED) {
             throw new Error('Input is not available');
@@ -62,6 +85,9 @@ define(function () {
         this._canvas.addEventListener('click', this._inputListener);
     };
 
+    /**
+     * End user input
+     */
     MapView.prototype.endInput = function () {
         if (this._state !== MapView.state.INPUT) {
             throw new Error('Input is not available');
@@ -86,7 +112,7 @@ define(function () {
     };
 
     MapView.prototype._setCellState = function (i, j, isAlive) {
-        this._lifeMap.state(i, j, isAlive);
+        this._lifeMap.isAlive(i, j, isAlive);
         var rX = (j - this._cellsHorizontalOffset) * MapView.CELL_WIDTH,
             rY = (i - this._cellsVerticalOffset) * MapView.CELL_HEIGHT;
         if (isAlive) {
@@ -98,7 +124,7 @@ define(function () {
     };
 
     MapView.prototype._toggleCellState = function (i, j) {
-        var isAlive = !this._lifeMap.state(i, j);
+        var isAlive = !this._lifeMap.isAlive(i, j);
         this._setCellState(i, j, isAlive);
     };
 
