@@ -1,0 +1,21 @@
+html {
+    overflow: hidden;
+}
+
+body {
+    overflow: hidden;
+    font: 14px sans-serif;
+}
+
+h1 {
+    margin: 0;
+}
+
+.wrapper {
+    text-align: center;
+}
+
+.game {
+    display: inline-block;
+    text-align: left;
+}
