@@ -1,4 +1,6 @@
 define(function () {
+    // TODO: implement big numbers
+
     /**
      * Dummy LifeMap (not for big numbers)
      * @param {Number} mapWidth Max universe width
@@ -23,6 +25,8 @@ define(function () {
             this._container.push(row);
         }
     };
+
+    LifeMap.POPULATED_DELTA = 25;
 
     /**
      * Map width
@@ -61,21 +65,32 @@ define(function () {
      * @returns {Boolean}
      */
     LifeMap.prototype.isAlive = function (x, y, status) {
-        if (x < 0 || x > this.width() || y < 0 || y > this.height()) {
-            return false;
-        } else if (status !== undefined) {
+        if (x < 0) {
+            x = this._width + x;
+        } else if (x > this._width - 1) {
+            x = x % this._width;
+        }
+        if (y < 0) {
+            y = this._height + y;
+        } else if (y > this._height - 1) {
+            y = y % this._height;
+        }
+
+        if (status !== undefined) {
             this._container[x][y] = status;
-            if (x < this._minX) {
-                this._minX = x;
-            }
-            if (x > this._maxX) {
-                this._maxX = x;
-            }
-            if (y < this._minY) {
-                this._minY = y;
-            }
-            if (y > this._maxY) {
-                this._maxY = y;
+            if (status) {
+                if (x - LifeMap.POPULATED_DELTA < this._minX) {
+                    this._minX = Math.max(0, x - LifeMap.POPULATED_DELTA);
+                }
+                if (x + LifeMap.POPULATED_DELTA > this._maxX) {
+                    this._maxX = Math.min(this._width, x + LifeMap.POPULATED_DELTA);
+                }
+                if (y - LifeMap.POPULATED_DELTA < this._minY) {
+                    this._minY = Math.max(0, y - LifeMap.POPULATED_DELTA);
+                }
+                if (y + LifeMap.POPULATED_DELTA > this._maxY) {
+                    this._maxY = Math.min(this._height, y + LifeMap.POPULATED_DELTA);
+                }
             }
         }
         return this._container[x][y];

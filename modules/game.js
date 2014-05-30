@@ -118,7 +118,7 @@ define(
                 function makeStep() {
                     handleCell(i, j);
                     ++j;
-                    if (j < populated.right) {
+                    if (j <= populated.right) {
                         makeStep();
                     } else {
                         ++i;
