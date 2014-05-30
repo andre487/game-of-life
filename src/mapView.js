@@ -22,8 +22,11 @@ define(function () {
             this._allCellsByVertical,
             Math.floor(this._canvasHeight / MapView.CELL_HEIGHT)
         );
-        this._inputListener = this._inputListener.bind(this);
 
+        this._cellsHorizontalOffset = Math.floor((this._allCellsByHorizontal - this._cellsByHorizontal) / 2);
+        this._cellsVerticalOffset = Math.floor((this._allCellsByVertical - this._cellsByVertical) / 2);
+
+        this._inputListener = this._inputListener.bind(this);
         this._state = MapView.state.INIT;
     };
 
@@ -38,9 +41,13 @@ define(function () {
 
     MapView.prototype.render = function () {
         this._context.clearRect(0, 0, this._canvasWidth, this._canvasHeight);
-        var i, j;
-        for (i = 0; i < this._cellsByVertical; ++i) {
-            for (j = 0; j < this._cellsByHorizontal; ++j) {
+        var i = this._cellsVerticalOffset,
+            m = i + this._cellsByVertical,
+            j, n;
+        for (; i < m; ++i) {
+            j = this._cellsHorizontalOffset;
+            n = j + this._cellsByHorizontal;
+            for (; j < n; ++j) {
                 this._setCellState(i, j, this._lifeMap.state(i, j));
             }
         }
@@ -68,20 +75,20 @@ define(function () {
             throw new Error('The map not into INPUT state');
         }
         var cell = this._getCellByClientCoordinates(event.clientX, event.clientY);
-        this._toggleCellState(cell[0], cell[1]);
+        this._toggleCellState(cell.top, cell.left);
     };
 
-    MapView.prototype._getCellByClientCoordinates = function (x, y) {
-        return [
-            Math.floor((x - this._canvasRect.left) / MapView.CELL_WIDTH),
-            Math.floor((y - this._canvasRect.top) / MapView.CELL_HEIGHT)
-        ];
+    MapView.prototype._getCellByClientCoordinates = function (clientX, clientY) {
+        return {
+            top: this._cellsVerticalOffset + Math.floor((clientY - this._canvasRect.top) / MapView.CELL_HEIGHT),
+            left: this._cellsHorizontalOffset + Math.floor((clientX - this._canvasRect.left) / MapView.CELL_WIDTH)
+        };
     };
 
-    MapView.prototype._setCellState = function (x, y, isAlive) {
-        this._lifeMap.state(x, y, isAlive);
-        var rX = x * MapView.CELL_WIDTH,
-            rY = y * MapView.CELL_HEIGHT;
+    MapView.prototype._setCellState = function (i, j, isAlive) {
+        this._lifeMap.state(i, j, isAlive);
+        var rX = (j - this._cellsHorizontalOffset) * MapView.CELL_WIDTH,
+            rY = (i - this._cellsVerticalOffset) * MapView.CELL_HEIGHT;
         if (isAlive) {
             this._context.fillRect(rX, rY, MapView.CELL_WIDTH, MapView.CELL_HEIGHT);
         } else {
@@ -90,9 +97,9 @@ define(function () {
         }
     };
 
-    MapView.prototype._toggleCellState = function (x, y) {
-        var isAlive = !this._lifeMap.state(x, y);
-        this._setCellState(x, y, isAlive);
+    MapView.prototype._toggleCellState = function (i, j) {
+        var isAlive = !this._lifeMap.state(i, j);
+        this._setCellState(i, j, isAlive);
     };
 
     return MapView;
