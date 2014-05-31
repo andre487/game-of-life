@@ -1,11 +1,11 @@
 define(
-    ['lifeMap', 'utils'],
+    ['lifeMap', 'utils', '../bower_components/bignum/biginteger.js'],
     function (LifeMap, utils) {
         'use strict';
 
         /**
          * Game logic object
-         * @param {Object} lifeMap
+         * @param {LifeMap} lifeMap
          * @constructor
          */
         var GameOfLife = function (lifeMap) {
@@ -93,7 +93,7 @@ define(
         /**
          * Stop game
          * Note: game will not stop immediately,
-         * stopping will be pushed to execution queue
+         * stopping will be pushed to event loop
          */
         GameOfLife.prototype.stop = function () {
             this._stopFlag = true;
@@ -111,19 +111,19 @@ define(
                 newMap = new LifeMap(this._lifeMap.width(), this._lifeMap.height());
             utils.onNextTick(walkByColumn, populated.top);
 
-            function walkByColumn(i) {
-                var j = populated.left;
+            function walkByColumn(bigI) {
+                var bigJ = populated.left;
                 makeStep();
 
                 function makeStep() {
-                    handleCell(i, j);
-                    ++j;
-                    if (j <= populated.right) {
+                    handleCell(bigI, bigJ);
+                    bigJ = bigJ.add(BigInteger.ONE);
+                    if (bigJ.compare(populated.right) <= 0) {
                         makeStep();
                     } else {
-                        ++i;
-                        if (i <= populated.bottom) {
-                            utils.onNextTick(walkByColumn, i);
+                        bigI = bigI.add(BigInteger.ONE);
+                        if (bigI.compare(populated.bottom) <= 0) {
+                            utils.onNextTick(walkByColumn, bigI);
                         } else {
                             done(newMap);
                         }
@@ -131,28 +131,28 @@ define(
                 }
             }
 
-            function handleCell(x, y) {
-                var state = self._lifeMap.isAlive(x, y),
+            function handleCell(bigX, bigY) {
+                var state = self._lifeMap.isAlive(bigX, bigY),
                     aliveSiblings = 0;
                 var i, j;
                 for (i = -1; i <= 1; ++i) {
                     for (j = -1; j <= 1; ++j) {
                         if (!(i === 0 && j === 0)) {
-                            aliveSiblings += self._lifeMap.isAlive(x + i, y + j);
+                            aliveSiblings += self._lifeMap.isAlive(bigX.add(i), bigY.add(j));
                         }
                     }
                 }
 
                 if (state) {
                     if (aliveSiblings === 2 || aliveSiblings === 3) {
-                        newMap.isAlive(x, y, true);
+                        newMap.isAlive(bigX, bigY, true);
                     } else {
-                        newMap.isAlive(x, y, false);
+                        newMap.isAlive(bigX, bigY, false);
                     }
                 } else if (aliveSiblings === 3) {
-                    newMap.isAlive(x, y, true);
+                    newMap.isAlive(bigX, bigY, true);
                 } else {
-                    newMap.isAlive(x, y, false);
+                    newMap.isAlive(bigX, bigY, false);
                 }
             }
         };

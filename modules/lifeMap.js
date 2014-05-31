@@ -1,112 +1,145 @@
-define(function () {
-    // TODO: implement big numbers
-
-    /**
-     * Dummy LifeMap (not for big numbers)
-     * @param {Number} mapWidth Max universe width
-     * @param {Number} mapHeight Max universe height
-     * @constructor
-     */
-    var LifeMap = function (mapWidth, mapHeight) {
-        this._container = [];
-        this._width = mapWidth;
-        this._height = mapHeight;
-        this._minX = mapWidth - 1;
-        this._maxX = 0;
-        this._minY = mapWidth - 1;
-        this._maxY = 0;
-
-        var i, j, row;
-        for (i = 0; i < mapHeight; ++i) {
-            row = [];
-            for (j = 0; j < mapWidth; ++j) {
-                row.push(false);
-            }
-            this._container.push(row);
-        }
-    };
-
-    LifeMap.POPULATED_DELTA = 25;
-
-    /**
-     * Map width
-     * @returns {Number}
-     */
-    LifeMap.prototype.width = function () {
-        return this._width;
-    };
-
-    /**
-     * Map height
-     * @returns {Number}
-     */
-    LifeMap.prototype.height = function () {
-        return this._height;
-    };
-
-    /**
-     * Get populated area
-     * @returns {{top: *, right: *, bottom: *, left: *}}
-     */
-    LifeMap.prototype.populatedRect = function () {
-        return {
-            top: this._minY,
-            right: this._maxX,
-            bottom: this._maxY,
-            left: this._minX
+define(
+    ['../bower_components/bignum/biginteger.js'],
+    function () {
+        /**
+         * LifeMap: structure containing cells statuses
+         * Note: for all numbers in this object the BigInteger used
+         * @param {BigInteger|Number} mapWidth Max universe width
+         * @param {BigInteger|Number} mapHeight Max universe height
+         * @constructor
+         */
+        var LifeMap = function (mapWidth, mapHeight) {
+            this._container = {};
+            this._width = BigInteger(mapWidth);
+            this._height = BigInteger(mapHeight);
+            this._minX = this._height.subtract(BigInteger.ONE);
+            this._maxX = BigInteger.ZERO;
+            this._minY = this._width.subtract(BigInteger.ONE);
+            this._maxY = BigInteger.ZERO;
         };
-    };
 
-    /**
-     * Is cell alive
-     * @param {Number} x
-     * @param {Number} y
-     * @param {Boolean} [status] If passed, set alive status
-     * @returns {Boolean}
-     */
-    LifeMap.prototype.isAlive = function (x, y, status) {
-        if (x < 0) {
-            x = this._width + x;
-        } else if (x > this._width - 1) {
-            x = x % this._width;
-        }
-        if (y < 0) {
-            y = this._height + y;
-        } else if (y > this._height - 1) {
-            y = y % this._height;
-        }
+        LifeMap.POPULATED_DELTA = BigInteger(30);
 
-        if (status !== undefined) {
-            this._container[x][y] = status;
+        /**
+         * Map width
+         * @returns {BigInteger}
+         */
+        LifeMap.prototype.width = function () {
+            return this._width;
+        };
+
+        /**
+         * Map height
+         * @returns {BigInteger}
+         */
+        LifeMap.prototype.height = function () {
+            return this._height;
+        };
+
+        /**
+         * Get populated area
+         * @returns {{top: BigInteger, right: BigInteger, bottom: BigInteger, left: BigInteger}}
+         */
+        LifeMap.prototype.populatedRect = function () {
+            return {
+                top: this._minY,
+                right: this._maxX,
+                bottom: this._maxY,
+                left: this._minX
+            };
+        };
+
+        /**
+         * Is cell alive
+         * @param {BigInteger|Number} x
+         * @param {BigInteger|Number} y
+         * @param {Boolean} [status] If passed, set alive status
+         * @returns {Boolean}
+         */
+        LifeMap.prototype.isAlive = function (x, y, status) {
+            var bigX = BigInteger(x),
+                bigY = BigInteger(y);
+
+            if (bigX.compare(BigInteger.ZERO) < 0) {
+                bigX = this._width.add(bigX);
+            } else if (bigX.compare(this._width.subtract(BigInteger.ONE)) > 0) {
+                bigX = this._width.remainder(bigX);
+            }
+
+            if (bigY.compare(BigInteger.ZERO) < 0) {
+                bigY = this._height.add(bigY);
+            } else if (bigY.compare(this._height.subtract(BigInteger.ONE)) > 0) {
+                bigY = this._height.remainder(bigY);
+            }
+
+            if (status !== undefined) {
+                this._setStatusToContainer(bigX, bigY, status);
+            }
+
+            var keyX = bigX.toString(),
+                keyY = bigY.toString();
+            return Boolean(this._container[keyX] && this._container[keyX][keyY]);
+        };
+
+        LifeMap.prototype._setStatusToContainer = function (bigX, bigY, status) {
+            var keyX = bigX.toString(),
+                keyY = bigY.toString();
+
+            if (status === true) {
+                if (this._container[keyX] === undefined) {
+                    this._container[keyX] = {};
+                }
+                this._container[keyX][keyY] = true;
+            } else if (status === false && this._container[keyX]) {
+                delete this._container[keyX][keyY];
+                if (Object.keys(this._container[keyX]).length === 0) {
+                    delete this._container[keyX];
+                }
+            }
+
             if (status) {
-                if (x - LifeMap.POPULATED_DELTA < this._minX) {
-                    this._minX = Math.max(0, x - LifeMap.POPULATED_DELTA);
+                if (bigX.subtract(LifeMap.POPULATED_DELTA).compare(this._minX) < 0) {
+                    this._minX = bigX.subtract(LifeMap.POPULATED_DELTA);
+                    if (this._minX.compare(BigInteger.ZERO) < 0) {
+                        this._minX = BigInteger.ZERO;
+                    }
                 }
-                if (x + LifeMap.POPULATED_DELTA > this._maxX) {
-                    this._maxX = Math.min(this._width, x + LifeMap.POPULATED_DELTA);
+
+                if (bigX.add(LifeMap.POPULATED_DELTA).compare(this._maxX) > 0) {
+                    this._maxX = bigX.add(LifeMap.POPULATED_DELTA);
+                    if (this._maxX.compare(this._width.subtract(BigInteger.ONE)) > 0) {
+                        this._maxX = this._width.subtract(BigInteger.ONE);
+                    }
                 }
-                if (y - LifeMap.POPULATED_DELTA < this._minY) {
-                    this._minY = Math.max(0, y - LifeMap.POPULATED_DELTA);
+
+                if (bigY.subtract(LifeMap.POPULATED_DELTA).compare(this._minY) < 0) {
+                    this._minY = bigY.subtract(LifeMap.POPULATED_DELTA);
+                    if (this._minY.compare(BigInteger.ZERO) < 0) {
+                        this._minY = BigInteger.ZERO;
+                    }
                 }
-                if (y + LifeMap.POPULATED_DELTA > this._maxY) {
-                    this._maxY = Math.min(this._height, y + LifeMap.POPULATED_DELTA);
+
+                if (bigY.add(LifeMap.POPULATED_DELTA).compare(this._maxY) > 0) {
+                    this._maxY = bigY.add(LifeMap.POPULATED_DELTA);
+                    if (this._maxY.compare(this._height.subtract(BigInteger.ONE)) > 0) {
+                        this._maxY = this._height.subtract(BigInteger.ONE);
+                    }
                 }
             }
-        }
-        return this._container[x][y];
-    };
+        };
 
-    /**
-     * Replace this map with another
-     * @param {Object} anotherMap
-     */
-    LifeMap.prototype.replaceWith = function (anotherMap) {
-        for (var prop in anotherMap) {
-            if (anotherMap.hasOwnProperty(prop) && this.hasOwnProperty(prop)) {
-                this[prop] = anotherMap[prop];
+        /**
+         * Replace this map with another
+         * @param {LifeMap} anotherMap
+         */
+        LifeMap.prototype.replaceWith = function (anotherMap) {
+            for (var prop in anotherMap) {
+                if (anotherMap.hasOwnProperty(prop) && this.hasOwnProperty(prop)) {
+                    this[prop] = anotherMap[prop];
+                }
             }
-        }
-    };
+        };
 
-    return LifeMap;
-});
+        return LifeMap;
+    }
+);

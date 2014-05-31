@@ -3,6 +3,7 @@
     "version": "0.1.0",
     "dependencies": {
         "requirejs": "latest",
-        "setImmediate": "https://github.com/YuzuJS/setImmediate.git"
+        "setImmediate": "https://github.com/YuzuJS/setImmediate.git",
+        "bignum": "https://github.com/jtobey/javascript-bignum.git"
     }
 }

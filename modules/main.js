@@ -1,13 +1,11 @@
 require(
-    ['lifeMap', 'mapView', 'game'],
+    ['lifeMap', 'mapView', 'game', '../bower_components/bignum/biginteger.js'],
     function (LifeMap, MapView, GameOfLife) {
         'use strict';
-        var universeSize = 1e3,
-            //universeSize = Math.pow(2, 64),
+        var universeSize = BigInteger(2).pow(64),
             lifeMap = new LifeMap(universeSize, universeSize),
             mapView = new MapView('map', lifeMap),
             game = new GameOfLife(lifeMap);
-
         mapView.render();
         mapView.beginInput();
 
