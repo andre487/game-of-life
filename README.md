@@ -17,3 +17,6 @@ In current implementation the libraries was used:
 The visible field size changed to 60×40 as compared with task just for most users convenience.
 
 You can play this game at [life.underlime.net](http://life.underlime.net/)
+
+*Note:* This algorithm can be optimized to reduce operations count of each iterations. 
+For this optimization the cells only in some radius of alive cells must be handling.
