@@ -44,8 +44,8 @@ define(function () {
         INPUT: 'input',
         LIFE: 'life'
     };
-    MapView.CELL_WIDTH = 10;
-    MapView.CELL_HEIGHT = 10;
+    MapView.CELL_WIDTH = 8;
+    MapView.CELL_HEIGHT = 8;
 
     /**
      * View state

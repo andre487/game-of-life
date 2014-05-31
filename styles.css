@@ -4,7 +4,12 @@ html {
 
 body {
     overflow: hidden;
-    font: 14px sans-serif;
+    font: 12px sans-serif;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
 }
 
 h1 {

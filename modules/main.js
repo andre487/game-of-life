@@ -31,5 +31,9 @@ require(
         stopButton.onclick = function () {
             game.stop();
         };
+
+        window.addEventListener('mousewheel', function (event) {
+            event.preventDefault();
+        }, true);
     }
 );
