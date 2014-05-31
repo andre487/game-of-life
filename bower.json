@@ -2,6 +2,7 @@
     "name": "GameOfLife",
     "version": "0.1.0",
     "dependencies": {
-        "requirejs": "latest"
+        "requirejs": "latest",
+        "setImmediate": "https://github.com/YuzuJS/setImmediate.git"
     }
 }
