@@ -16,9 +16,12 @@ define(
             this._maxX = BigInteger.ZERO;
             this._minY = this._width.subtract(BigInteger.ONE);
             this._maxY = BigInteger.ZERO;
+            this._changeListeners = [];
         };
 
         LifeMap.POPULATED_DELTA = BigInteger(30);
+
+        LifeMap.SIMPLE_FIELDS = ['_width', '_height', '_minX', '_maxX', '_minY', '_maxY'];
 
         /**
          * Map width
@@ -126,6 +129,66 @@ define(
                     }
                 }
             }
+        };
+
+        /**
+         * Add map external change listener
+         * @param {Function} listener
+         */
+        LifeMap.prototype.addChangeListener = function (listener) {
+            this._changeListeners.push(listener);
+        };
+
+        /**
+         * Create string map representation
+         * @returns {String}
+         */
+        LifeMap.prototype.serialize = function () {
+            var dump = '',
+                fields = LifeMap.SIMPLE_FIELDS;
+            for (var i = 0, n = fields.length; i < n; ++i) {
+                dump += this[fields[i]].toString() + ';';
+            }
+
+            for (var keyX in this._container) {
+                if (this._container.hasOwnProperty(keyX)) {
+                    dump += keyX + ':';
+                    for (var keyY in this._container[keyX]) {
+                        if (this._container[keyX].hasOwnProperty(keyY)) {
+                            dump += keyY + ',';
+                        }
+                    }
+                    dump = dump.substr(0, dump.length - 1) + '|';
+                }
+            }
+            return dump.substr(0, dump.length - 1);
+        };
+
+        /**
+         * Load state from serialized dump
+         * @param {String} dump
+         */
+        LifeMap.prototype.loadSerializedState = function (dump) {
+            var dumpParts = dump.split(';'),
+                fields = LifeMap.SIMPLE_FIELDS,
+                mapDump = dumpParts[fields.length];
+            for (var i = 0, n = fields.length; i < n; ++i) {
+                this[fields[i]] = BigInteger(dumpParts[i]);
+            }
+
+            var container = {};
+            mapDump.split('|').forEach(function (row) {
+                var parts = row.split(':');
+                container[parts[0]] = {};
+                parts[1].split(',').forEach(function (keyY) {
+                    container[parts[0]][keyY] = true;
+                });
+            });
+            this._container = container;
+
+            this._changeListeners.forEach(function (func) {
+                func();
+            });
         };
 
         return LifeMap;

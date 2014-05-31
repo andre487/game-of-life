@@ -9,6 +9,7 @@ define(
          * @constructor
          */
         var MapView = function (canvasId, lifeMap) {
+            var self = this;
             this._canvas = document.getElementById(canvasId);
             this._context = this._canvas.getContext('2d');
             this._context.fillStyle = '#333';
@@ -19,6 +20,28 @@ define(
 
             this._canvasWidth = this._canvas.clientWidth;
             this._canvasHeight = this._canvas.clientHeight;
+
+            this._initMapData();
+            this._lifeMap.addChangeListener(function () {
+                self._initMapData();
+                self.render();
+            });
+
+            this._inputListener = this._inputListener.bind(this);
+            this._state = MapView.state.INIT;
+        };
+
+        //noinspection JSValidateTypes
+        MapView.state = {
+            INIT: 'init',
+            RENDERED: 'rendered',
+            INPUT: 'input',
+            LIFE: 'life'
+        };
+        MapView.CELL_WIDTH = 8;
+        MapView.CELL_HEIGHT = 8;
+
+        MapView.prototype._initMapData = function () {
             this._allCellsByHorizontal = this._lifeMap.width();
             this._allCellsByVertical = this._lifeMap.height();
 
@@ -34,20 +57,7 @@ define(
 
             this._cellsHorizontalOffset = this._allCellsByHorizontal.subtract(this._cellsByHorizontal).divide(2);
             this._cellsVerticalOffset = this._allCellsByVertical.subtract(this._cellsByVertical).divide(2);
-
-            this._inputListener = this._inputListener.bind(this);
-            this._state = MapView.state.INIT;
         };
-
-        //noinspection JSValidateTypes
-        MapView.state = {
-            INIT: 'init',
-            RENDERED: 'rendered',
-            INPUT: 'input',
-            LIFE: 'life'
-        };
-        MapView.CELL_WIDTH = 8;
-        MapView.CELL_HEIGHT = 8;
 
         /**
          * View state
@@ -72,7 +82,9 @@ define(
                     this._setCellState(bigI, bigJ, this._lifeMap.isAlive(bigI, bigJ));
                 }
             }
-            this._state = MapView.state.RENDERED;
+            if (this._state !== MapView.state.INPUT) {
+                this._state = MapView.state.RENDERED;
+            }
         };
 
         /**
