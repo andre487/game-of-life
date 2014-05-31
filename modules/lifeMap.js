@@ -4,8 +4,8 @@ define(
         /**
          * LifeMap: structure containing cells statuses
          * Note: for all numbers in this object the BigInteger used
-         * @param {BigInteger|Number} mapWidth Max universe width
-         * @param {BigInteger|Number} mapHeight Max universe height
+         * @param {BigInteger|Number|String} mapWidth Max universe width
+         * @param {BigInteger|Number|String} mapHeight Max universe height
          * @constructor
          */
         var LifeMap = function (mapWidth, mapHeight) {
@@ -51,8 +51,8 @@ define(
 
         /**
          * Is cell alive
-         * @param {BigInteger|Number} x
-         * @param {BigInteger|Number} y
+         * @param {BigInteger|Number|String} x
+         * @param {BigInteger|Number|String} y
          * @param {Boolean} [status] If passed, set alive status
          * @returns {Boolean}
          */
@@ -124,18 +124,6 @@ define(
                     if (this._maxY.compare(this._height.subtract(BigInteger.ONE)) > 0) {
                         this._maxY = this._height.subtract(BigInteger.ONE);
                     }
-                }
-            }
-        };
-
-        /**
-         * Replace this map with another
-         * @param {LifeMap} anotherMap
-         */
-        LifeMap.prototype.replaceWith = function (anotherMap) {
-            for (var prop in anotherMap) {
-                if (anotherMap.hasOwnProperty(prop) && this.hasOwnProperty(prop)) {
-                    this[prop] = anotherMap[prop];
                 }
             }
         };

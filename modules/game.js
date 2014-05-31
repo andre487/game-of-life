@@ -73,8 +73,17 @@ define(
                 utils.onNextTick(self._runRoundAsync.bind(self, onRoundComplete));
             }
 
-            function onRoundComplete(newMap) {
-                self._lifeMap.replaceWith(newMap);
+            function onRoundComplete(changesTable) {
+                for (var keyX in changesTable) {
+                    if (changesTable.hasOwnProperty(keyX)) {
+                        for (var keyY in changesTable[keyX]) {
+                            if (changesTable[keyX].hasOwnProperty(keyY)) {
+                                self._lifeMap.isAlive(keyX, keyY, changesTable[keyX][keyY]);
+                            }
+                        }
+                    }
+                }
+
                 if (typeof self._roundCallback === 'function') {
                     utils.onNextTick(self._roundCallback);
                 }
@@ -108,7 +117,7 @@ define(
         GameOfLife.prototype._runRoundAsync = function (done) {
             var self = this,
                 populated = this._lifeMap.populatedRect(),
-                newMap = new LifeMap(this._lifeMap.width(), this._lifeMap.height());
+                changesTable = {};
             utils.onNextTick(walkByColumn, populated.top);
 
             function walkByColumn(bigI) {
@@ -125,7 +134,7 @@ define(
                         if (bigI.compare(populated.bottom) <= 0) {
                             utils.onNextTick(walkByColumn, bigI);
                         } else {
-                            done(newMap);
+                            done(changesTable);
                         }
                     }
                 }
@@ -143,16 +152,14 @@ define(
                     }
                 }
 
-                if (state) {
-                    if (aliveSiblings === 2 || aliveSiblings === 3) {
-                        newMap.isAlive(bigX, bigY, true);
-                    } else {
-                        newMap.isAlive(bigX, bigY, false);
-                    }
-                } else if (aliveSiblings === 3) {
-                    newMap.isAlive(bigX, bigY, true);
-                } else {
-                    newMap.isAlive(bigX, bigY, false);
+                var keyX = bigX.toString(),
+                    keyY = bigY.toString();
+                if (state && !(aliveSiblings === 2 || aliveSiblings === 3)) {
+                    changesTable[keyX] = changesTable[keyX] || {};
+                    changesTable[keyX][keyY] = false;
+                } else if (!state && aliveSiblings === 3) {
+                    changesTable[keyX] = changesTable[keyX] || {};
+                    changesTable[keyX][keyY] = true;
                 }
             }
         };
