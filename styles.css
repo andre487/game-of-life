@@ -49,6 +49,14 @@ button:disabled {
     margin-top: 10px;
 }
 
+.delimiter {
+    margin: 0 5px;
+}
+
+.delimiter:after {
+    content: '|';
+}
+
 .messages-container {
     position: absolute;
     top: 20px;
