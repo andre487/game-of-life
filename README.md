@@ -16,4 +16,4 @@ In current implementation the libraries was used:
 
 The visible field size changed to 60×40 as compared with task just for most users convenience.
 
-You can play this game in [life.underlime.net](http://life.underlime.net/)
+You can play this game at [life.underlime.net](http://life.underlime.net/)
