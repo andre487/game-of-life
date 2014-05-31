@@ -21,7 +21,8 @@ define(
         GameOfLife.state = {
             STOPPED: 'stopped',
             RUNNING: 'running',
-            STOPPING: 'stopping'
+            STOPPING: 'stopping',
+            COMPLETED: 'completed'
         };
 
         /**
@@ -74,11 +75,13 @@ define(
             }
 
             function onRoundComplete(changesTable) {
+                var changed = false;
                 for (var keyX in changesTable) {
                     if (changesTable.hasOwnProperty(keyX)) {
                         for (var keyY in changesTable[keyX]) {
                             if (changesTable[keyX].hasOwnProperty(keyY)) {
                                 self._lifeMap.isAlive(keyX, keyY, changesTable[keyX][keyY]);
+                                changed = true;
                             }
                         }
                     }
@@ -88,7 +91,12 @@ define(
                     utils.onNextTick(self._roundCallback);
                 }
 
-                if (self._stopFlag) {
+                if (changed === false) {
+                    self._state = GameOfLife.state.COMPLETED;
+                    if (typeof self._stopCallback === 'function') {
+                        utils.onNextTick(self._stopCallback);
+                    }
+                } else if (self._stopFlag) {
                     self._state = GameOfLife.state.STOPPED;
                     if (typeof self._stopCallback === 'function') {
                         utils.onNextTick(self._stopCallback);
