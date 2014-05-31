@@ -1,9 +1,9 @@
 require(
     [
-        'lifeMap', 'mapView', 'game', 'saves',
+        'lifeMap', 'mapView', 'game', 'saves', 'messages',
         '../bower_components/bignum/biginteger.js'
     ],
-    function (LifeMap, MapView, GameOfLife, saves) {
+    function (LifeMap, MapView, GameOfLife, saves, messages) {
         'use strict';
         var universeSize = BigInteger(2).pow(64),
             lifeMap = new LifeMap(universeSize, universeSize),
@@ -29,6 +29,9 @@ require(
             if (saves.saveExists()) {
                 loadButton.removeAttribute('disabled');
             }
+            if (game.state() == GameOfLife.state.COMPLETED) {
+                messages.showMessage('The game is completed!');
+            }
             mapView.beginInput();
         });
         game.onRound(mapView.render.bind(mapView));
@@ -51,10 +54,15 @@ require(
 
         if (saves.saveExists()) {
             loadButton.removeAttribute('disabled');
+            messages.showMessage('You have a saved game');
         }
 
         window.addEventListener('mousewheel', function (event) {
             event.preventDefault();
         }, true);
+
+        window.addEventListener('error', function (event) {
+            messages.showError('An error has occurred: ' + event.error.toString());
+        });
     }
 );

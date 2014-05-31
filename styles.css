@@ -24,3 +24,31 @@ h1 {
     display: inline-block;
     text-align: left;
 }
+
+.messages-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.messages-container .message {
+    position: relative;
+    width: 200px;
+    padding: 20px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.messages-container .close {
+    position: absolute;
+    top: 0;
+    right: 5px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.messages-container .error {
+    color: red;
+    border-color: red;
+}
