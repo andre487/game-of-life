@@ -12,8 +12,8 @@ define(
             var self = this;
             this._canvas = document.getElementById(canvasId);
             this._context = this._canvas.getContext('2d');
-            this._context.fillStyle = '#333';
-            this._context.strokeStyle = '#ccc';
+            this._context.fillStyle = '#708090';
+            this._context.strokeStyle = '#e6e6fa';
 
             this._canvasRect = this._canvas.getBoundingClientRect();
             this._lifeMap = lifeMap;
@@ -38,8 +38,8 @@ define(
             INPUT: 'input',
             LIFE: 'life'
         };
-        MapView.CELL_WIDTH = 8;
-        MapView.CELL_HEIGHT = 8;
+        MapView.CELL_WIDTH = 10;
+        MapView.CELL_HEIGHT = 10;
 
         MapView.prototype._initMapData = function () {
             this._allCellsByHorizontal = this._lifeMap.width();
