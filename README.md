@@ -15,3 +15,5 @@ In current implementation the libraries was used:
  * [JavaScript Bignum](https://github.com/jtobey/javascript-bignum) for handling the big numbers like 2<sup>64</sup>.
 
 The visible field size changed to 60×40 as compared with task just for most users convenience.
+
+You can play this game in [life.underlime.net](http://life.underlime.net/)
