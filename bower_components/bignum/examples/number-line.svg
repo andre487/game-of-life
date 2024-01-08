@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     xmlns:nl="http://john-edwin-tobey.org/number-line"
+     title="Click to zoom in, Ctrl-click to zoom out"
+     onload="NumberLine(this)" nl:low-bound="-1/2" nl:length="5/2"
+     nl:work-timeslice="100" nl:rest-timeslice="40">
+  <script type="application/ecmascript" xlink:href="../biginteger.js" />
+  <script type="application/ecmascript" xlink:href="../schemeNumber.js" />
+  <script type="application/ecmascript" xlink:href="number-line.js"/>
+
+  <text style="text-anchor: end;
+               font-style: italic;
+               dominant-baseline: text-before-edge"
+        x="100%" y="0"
+        >Number Line</text>
+
+  <g transform="translate(400,0)">
+    <nl:line x="0" stroke-width="6" stroke="green"/>
+
+    <nl:fractions min-scale="1.0" max-scale="8.0" line-spacing="14.0"
+                  x="3" little-opacity="0.2">
+      <polygon points="0,0 30,-2 30,2"/>
+      <text x="32" y="0" dominant-baseline="middle"><nl:output/></text>
+    </nl:fractions>
+
+    <nl:decimals min-scale="1.0" max-scale="8.0" line-spacing="20.0"
+                 mark-spacing="3.0" x="-3" scale5="1.3" scale10="1.6">
+      <line x1="0" y1="0" x2="-10" y2="0" stroke="black"/>
+      <text style="text-anchor: end" x="-12" y="0"
+            dominant-baseline="middle"><nl:output/></text>
+    </nl:decimals>
+  </g>
+</svg>
