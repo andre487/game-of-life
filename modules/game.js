@@ -1,5 +1,5 @@
 define(
-    ['lifeMap', 'utils', '../bower_components/bignum/biginteger.js'],
+    ['lifeMap', 'utils', 'bower_components/bignum/biginteger.js'],
     function (LifeMap, utils) {
         'use strict';
 

@@ -1,5 +1,5 @@
 define(
-    ['../bower_components/bignum/biginteger.js'],
+    ['bower_components/bignum/biginteger.js'],
     function () {
         'use strict';
         /**
