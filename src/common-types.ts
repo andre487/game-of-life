@@ -1,4 +1,4 @@
-import {C, F} from 'ts-toolbelt';
+import type {C, F} from 'ts-toolbelt';
 
 export type SimpleCallback = () => void;
 

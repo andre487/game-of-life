@@ -1,4 +1,4 @@
-import {SimpleCallback, ErrorClass, BigIntSrc} from './common-types';
+import type {BigIntSrc, ErrorClass, SimpleCallback} from './common-types';
 
 const setImmediateHandler = window.queueMicrotask ?? setTimeout0;
 
