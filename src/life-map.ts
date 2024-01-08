@@ -1,4 +1,4 @@
-import {BigIntSrc} from './common-types';
+import type {BigIntSrc} from './common-types';
 import {ensureBigInt, enterValueToInterval} from './utils';
 
 type ChangeListener = () => void;

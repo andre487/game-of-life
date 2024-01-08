@@ -1,4 +1,4 @@
-import {U} from 'ts-toolbelt';
+import type {U} from 'ts-toolbelt';
 import {createErrorThrower} from './utils';
 
 class MapViewError extends Error {}
