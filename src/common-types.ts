@@ -1,6 +1,8 @@
 export type SimpleCallback = () => void;
 
-export type BigIntSrc = bigint | number | boolean | string;
+export type ArgType<T> = T extends (x: infer FirstArgType, ...args: unknown[]) => unknown ? FirstArgType : never;
+
+export type BigIntSrc = ArgType<BigIntConstructor>;
 
 export interface ErrorClass {
     new (message?: string): Error;
