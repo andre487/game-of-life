@@ -1,10 +1,7 @@
+import {C, F} from 'ts-toolbelt';
+
 export type SimpleCallback = () => void;
 
-export type ArgType<T> = T extends (x: infer FirstArgType, ...args: unknown[]) => unknown ? FirstArgType : never;
+export type BigIntSrc = F.Parameters<BigIntConstructor>[0];
 
-export type BigIntSrc = ArgType<BigIntConstructor>;
-
-export interface ErrorClass {
-    new (message?: string): Error;
-    readonly prototype: Error;
-}
+export type ErrorClass = C.Class<[message: string], Error>;
