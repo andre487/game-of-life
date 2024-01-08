@@ -1,3 +1,4 @@
+import {U} from 'ts-toolbelt';
 import {createErrorThrower} from './utils';
 
 class MapViewError extends Error {}
@@ -16,11 +17,10 @@ export class MapView {
     constructor(canvasId: string, lifeMap: unknown) {
         this.lifeMap = lifeMap;
 
-        this.canvas = document.getElementById(canvasId) as HTMLCanvasElement | null ?? thr('Canvas not found');
+        this.canvas = document.getElementById(canvasId) as U.Nullable<HTMLCanvasElement> ?? thr('Canvas not found');
         this.canvasRect = this.canvas.getBoundingClientRect();
         this.canvasWidth = this.canvas.clientWidth;
         this.canvasHeight = this.canvas.clientHeight;
-
 
         this.ctx = this.canvas.getContext('2d') ?? thr('Failed to create context');
         this.ctx.fillStyle = '#708090';
