@@ -1,7 +1,7 @@
 require(
     [
         'lifeMap', 'mapView', 'game', 'saves', 'messages',
-        '../bower_components/bignum/biginteger.js'
+        'bower_components/bignum/biginteger.js'
     ],
     function (LifeMap, MapView, GameOfLife, saves, messages) {
         'use strict';

@@ -1,5 +1,5 @@
 define(
-    ['../bower_components/setImmediate/setImmediate.js'],
+    ['bower_components/setImmediate/setImmediate.js'],
     function () {
         /**
          * Queue function into an event loop
