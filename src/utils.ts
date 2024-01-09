@@ -47,8 +47,8 @@ export function enterValueToInterval(val: BigIntSrc, max: BigIntSrc): bigint {
     const bigMax = ensureBigInt(max);
     if (res < 0n) {
         res = bigMax + res;
-    } else if (res > bigMax - 1n) {
-        res = bigMax % res;
+    } else if (res >= bigMax) {
+        res = res % bigMax;
     }
     return res;
 }
