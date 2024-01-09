@@ -1,0 +1,86 @@
+html {
+    overflow: hidden;
+}
+
+body {
+    overflow: hidden;
+    font: 12px sans-serif;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    color: #708090;
+}
+
+h1 {
+    margin: 0;
+}
+
+button {
+    border: none;
+    background: #708090;
+    color: white;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 3px;
+    outline: none;
+}
+
+button:active {
+    background: #505050;
+}
+
+button:disabled {
+    background: #ccc;
+    color: #f1f1f1;
+}
+
+.wrapper {
+    text-align: center;
+}
+
+.game {
+    display: inline-block;
+    text-align: left;
+}
+
+.controls {
+    margin-top: 10px;
+}
+
+.delimiter {
+    margin: 0 5px;
+}
+
+.delimiter:after {
+    content: '|';
+}
+
+.messages-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.messages-container .message {
+    position: relative;
+    width: 200px;
+    padding: 20px;
+    margin-bottom: 10px;
+    border: 1px solid #708090;
+    color: #708090;
+    border-radius: 5px;
+}
+
+.messages-container .close {
+    position: absolute;
+    top: 0;
+    right: 5px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.messages-container .error {
+    color: red;
+    border-color: red;
+}
