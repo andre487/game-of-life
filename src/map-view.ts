@@ -31,10 +31,10 @@ export class MapView {
     private _cellsHorizontalOffset = 0n;
     private _cellsVerticalOffset = 0n;
 
-    constructor(canvasId: string, lifeMap: LifeMap) {
+    constructor(lifeMap: LifeMap) {
         this._lifeMap = lifeMap;
 
-        this._canvas = document.getElementById(canvasId) as U.Nullable<HTMLCanvasElement> ?? thr('Canvas not found');
+        this._canvas = document.getElementById('map') as U.Nullable<HTMLCanvasElement> ?? thr('Canvas not found');
         this._canvasRect = this._canvas.getBoundingClientRect();
         this._canvasWidth = this._canvas.clientWidth;
         this._canvasHeight = this._canvas.clientHeight;
@@ -50,7 +50,7 @@ export class MapView {
         });
     }
 
-    render() {
+    render = () => {
         this._ctx.clearRect(0, 0, this._canvasWidth, this._canvasHeight);
 
         let i = this._cellsVerticalOffset;
@@ -66,23 +66,23 @@ export class MapView {
         if (this._state !== MapViewState.Input) {
             this._state = MapViewState.Rendered;
         }
-    }
+    };
 
-    beginInput() {
+    beginInput = () => {
         if (this._state !== MapViewState.Rendered) {
             throw new Error('Input is not available');
         }
         this._state = MapViewState.Input;
         this._canvas.addEventListener('click', this._inputListener);
-    }
+    };
 
-    endInput() {
+    endInput = () => {
         if (this._state !== MapViewState.Input) {
             throw new MapViewError('Input is not available');
         }
         this._state = MapViewState.Rendered;
         this._canvas.removeEventListener('click', this._inputListener);
-    }
+    };
 
     private _initMapData() {
         this._cellsByHorizontal = Math.floor(this._canvasWidth / MapView.CELL_WIDTH);

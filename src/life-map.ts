@@ -9,8 +9,8 @@ export interface PopulatedRect {
     left: bigint;
 }
 
-type CoordVector = Record<string, boolean | undefined>;
-type CoordMatrix = Record<string, CoordVector>;
+export type CoordVector = Record<string, boolean | undefined>;
+export type CoordMatrix = Record<string, CoordVector>;
 
 export class LifeMapError extends CustomError {}
 
@@ -49,10 +49,10 @@ export class LifeMap {
 
     get populatedRect(): PopulatedRect {
         return {
-            top: this._minY,
-            right: this._maxX,
-            bottom: this._maxY,
             left: this._minX,
+            right: this._maxX,
+            top: this._minY,
+            bottom: this._maxY,
         };
     }
 
@@ -139,7 +139,6 @@ export class LifeMap {
             }
         }
 
-        // TODO: Кажется, это вообще не нужно
         if (!status) {
             return;
         }
