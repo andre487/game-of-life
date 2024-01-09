@@ -1,6 +1,4 @@
-import type {BigIntSrc, ErrorClass, SimpleCallback} from './common-types';
-
-const setImmediateHandler = window.queueMicrotask ?? setTimeout0;
+import type {BigIntSrc, ErrorClass, GeneralCallback, SimpleCallback} from './common-types';
 
 export class CustomError extends Error {
     constructor(message?: string) {
@@ -23,12 +21,8 @@ export function call(x: SimpleCallback) {
     }
 }
 
-export function setImmediate(cb: SimpleCallback) {
-    setImmediateHandler(cb);
-}
-
-function setTimeout0(cb: SimpleCallback) {
-    setTimeout(cb, 0);
+export function setImmediate<T extends unknown[], U>(cb: GeneralCallback<T, U>, ...args: T) {
+    setTimeout(() => cb(...args), 0);
 }
 
 export function onPageReady(cb: SimpleCallback) {
