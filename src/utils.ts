@@ -15,7 +15,12 @@ export function obj(): unknown {
 }
 
 export function call(x: SimpleCallback) {
-    x();
+    try {
+        x();
+    } catch (e) {
+        console.error('Unable to call some handler:', e);
+        // TODO: Error reporting
+    }
 }
 
 export function setImmediate(cb: SimpleCallback) {
