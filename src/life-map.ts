@@ -1,6 +1,6 @@
 import type {O} from 'ts-toolbelt';
-import type {BigIntSrc, CanString, SimpleCallback} from './common-types';
-import {call, CustomError, ensureBigInt, enterValueToInterval, obj} from './utils';
+import type {BigIntSrc, SimpleCallback, Stringable} from './common-types';
+import {call, CustomError, enterValueToInterval, obj} from './utils';
 
 export interface PopulatedRect {
     top: bigint;
@@ -29,8 +29,8 @@ export class LifeMap {
     constructor(mapWidth: BigIntSrc, mapHeight: BigIntSrc) {
         this._container = obj() as CoordMatrix;
 
-        this._width = ensureBigInt(mapWidth);
-        this._height = ensureBigInt(mapHeight);
+        this._width = BigInt(mapWidth);
+        this._height = BigInt(mapHeight);
 
         this._minX = this._height - 1n;
         this._maxX = 0n;
@@ -81,7 +81,7 @@ export class LifeMap {
     }
 
     serialize(): string {
-        const data: CanString[] = [this._width, this._height, this._minX, this._maxX, this._minY, this._maxY];
+        const data: Stringable[] = [this._width, this._height, this._minX, this._maxX, this._minY, this._maxY];
 
         const coords: string[] = [];
         for (const [keyX, vector] of Object.entries(this._container)) {
@@ -128,9 +128,7 @@ export class LifeMap {
         const keyY = bigY.toString();
 
         if (status) {
-            if (this._container[keyX] === undefined) {
-                this._container[keyX] = obj() as CoordVector;
-            }
+            this._container[keyX] ??= obj() as CoordVector;
             this._container[keyX][keyY] = true;
         } else if (!status && this._container[keyX]) {
             delete this._container[keyX][keyY];

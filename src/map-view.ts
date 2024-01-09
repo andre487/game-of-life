@@ -30,6 +30,7 @@ export class MapView {
     private _cellsByVertical = 0;
     private _cellsHorizontalOffset = 0n;
     private _cellsVerticalOffset = 0n;
+    private _curFrameRequest: U.Nullable<number> = null;
 
     constructor(lifeMap: LifeMap) {
         this._lifeMap = lifeMap;
@@ -69,7 +70,15 @@ export class MapView {
     };
 
     renderWhenFrame = () => {
-        requestAnimationFrame(this.render);
+        if (this._curFrameRequest) {
+            cancelAnimationFrame(this._curFrameRequest);
+            console.warn('Skip render frame');
+        }
+
+        this._curFrameRequest = requestAnimationFrame(() => {
+            this._curFrameRequest = null;
+            this.render();
+        });
     };
 
     beginInput = () => {

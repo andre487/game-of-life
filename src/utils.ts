@@ -12,27 +12,26 @@ export function obj(): unknown {
     return Object.create(null);
 }
 
-export function call(x: SimpleCallback) {
+export function call(func: SimpleCallback) {
     try {
-        x();
+        func();
     } catch (e) {
-        console.error('Unable to call some handler:', e);
-        // TODO: Error reporting
+        window.reportError(e);
     }
 }
 
-export function setImmediate<T extends unknown[], U>(cb: GeneralCallback<T, U>, ...args: T) {
+export function onNextTick<T extends unknown[], U>(cb: GeneralCallback<T, U>, ...args: T) {
     setTimeout(() => cb(...args), 0);
 }
 
 export function onPageReady(cb: SimpleCallback) {
     function loadCb() {
-        setImmediate(cb);
+        onNextTick(cb);
         document.removeEventListener('DOMContentLoaded', loadCb);
         window.removeEventListener('load', loadCb);
     }
 
-    if (document.readyState == 'interactive' || document.readyState == 'complete') {
+    if (document.readyState === 'interactive' || document.readyState === 'complete') {
         return loadCb();
     }
 
@@ -50,16 +49,9 @@ export function createErrorThrower(ErrCls: ErrorClass) {
     };
 }
 
-export function ensureBigInt(val: BigIntSrc): bigint {
-    if (typeof val === 'bigint') {
-        return val;
-    }
-    return BigInt(val);
-}
-
 export function enterValueToInterval(val: BigIntSrc, max: BigIntSrc): bigint {
-    let res = ensureBigInt(val);
-    const bigMax = ensureBigInt(max);
+    let res = BigInt(val);
+    const bigMax = BigInt(max);
     if (res < 0n) {
         res = bigMax + res;
     } else if (res >= bigMax) {
