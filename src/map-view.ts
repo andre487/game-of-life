@@ -68,6 +68,10 @@ export class MapView {
         }
     };
 
+    renderWhenFrame = () => {
+        requestAnimationFrame(this.render);
+    };
+
     beginInput = () => {
         if (this._state !== MapViewState.Rendered) {
             throw new Error('Input is not available');

@@ -1,5 +1,6 @@
 import type {U} from 'ts-toolbelt';
 import {GameOfLife, GameOfLifeState} from './game';
+import {MessagesView} from './messages-view';
 import {SaveGameController} from './save-game-controller';
 import {createErrorThrower, CustomError} from './utils';
 
@@ -16,10 +17,12 @@ export class ControlsView {
     private _saveButton: HTMLButtonElement;
     private _loadButton: HTMLButtonElement;
     private _saveGameController: SaveGameController;
+    private _messagesView: MessagesView;
 
-    constructor(game: GameOfLife, saveGameController: SaveGameController) {
+    constructor(game: GameOfLife, saveGameController: SaveGameController, messagesView: MessagesView) {
         this._game = game;
         this._saveGameController = saveGameController;
+        this._messagesView = messagesView;
 
         this._startButton = document.getElementById('start') as MaybeButton ?? thr('Button not found');
         this._stopButton = document.getElementById('stop') as MaybeButton ?? thr('Button not found');
@@ -40,8 +43,8 @@ export class ControlsView {
             if (this._saveGameController.doesSaveExist()) {
                 this._loadButton.removeAttribute('disabled');
             }
-            if (this._game.state == GameOfLifeState.Completed) {
-                // messages.showMessage('The game is completed!');
+            if (this._game.state === GameOfLifeState.Completed) {
+                this._messagesView.showMessage('The game is completed!');
             }
         });
 
@@ -63,7 +66,7 @@ export class ControlsView {
 
         if (this._saveGameController.doesSaveExist()) {
             this._loadButton.removeAttribute('disabled');
-            // messages.showMessage('You have a saved game');
+            this._messagesView.showMessage('You have a saved game');
         }
     }
 }
