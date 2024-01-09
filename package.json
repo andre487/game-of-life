@@ -2,8 +2,10 @@
   "name": "game-of-life",
   "version": "2.0.0",
   "description": "The Game of life implementation",
+  "source": "src/index.html",
   "scripts": {
-    "build": "parcel index.html",
+    "start": "parcel",
+    "build": "rm -rf dist && parcel build",
     "lint": "eslint .",
     "test": "eslint . && jest ."
   },
