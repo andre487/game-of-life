@@ -2,6 +2,22 @@ import type {BigIntSrc, ErrorClass, SimpleCallback} from './common-types';
 
 const setImmediateHandler = window.queueMicrotask ?? setTimeout0;
 
+export class CustomError extends Error {
+    constructor(message?: string) {
+        super(message);
+        this.name = this.constructor.name;
+        Error.captureStackTrace?.(this, this.constructor);
+    }
+}
+
+export function obj(): unknown {
+    return Object.create(null);
+}
+
+export function call(x: SimpleCallback) {
+    x();
+}
+
 export function setImmediate(cb: SimpleCallback) {
     setImmediateHandler(cb);
 }

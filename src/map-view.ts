@@ -1,7 +1,7 @@
 import type {U} from 'ts-toolbelt';
-import {createErrorThrower} from './utils';
+import {createErrorThrower, CustomError} from './utils';
 
-class MapViewError extends Error {}
+export class MapViewError extends CustomError {}
 
 const thr = createErrorThrower(MapViewError);
 
