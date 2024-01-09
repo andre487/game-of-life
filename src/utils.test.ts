@@ -1,11 +1,11 @@
-import type {Nullable} from 'ts-toolbelt/out/Union/Nullable';
-import {describe, expect, it} from './test-common';
-import {createErrorThrower, ensureBigInt, enterValueToInterval, onPageReady, setImmediate, throwError} from './utils';
+import {describe, expect, it} from '@jest/globals';
+import type {U} from 'ts-toolbelt';
+import {createErrorThrower, enterValueToInterval, onNextTick, onPageReady, throwError} from './utils';
 
-describe('setImmediate()', function() {
+describe('onNextTick()', function() {
     it('should run callback', async function() {
         const res = await new Promise((resolve) => {
-            setImmediate(function() {
+            onNextTick(function() {
                 resolve(true);
             });
         });
@@ -35,7 +35,7 @@ describe('throwError()', function() {
     }
 
     it('should throw Error by default', function() {
-        let errorInstance: Nullable<Error> = null;
+        let errorInstance: U.Nullable<Error> = null;
         try {
             throwError('Test');
         } catch (e) {
@@ -48,7 +48,7 @@ describe('throwError()', function() {
     });
 
     it('should throw CustomError', function() {
-        let errorInstance: Nullable<Error> = null;
+        let errorInstance: U.Nullable<Error> = null;
         try {
             throwError('Test', CustomError);
         } catch (e) {
@@ -72,7 +72,7 @@ describe('createErrorThrower()', function() {
     it('should throw an error of specified type', function() {
         const thr = createErrorThrower(CustomError);
 
-        let errorInstance: Nullable<Error> = null;
+        let errorInstance: U.Nullable<Error> = null;
         try {
             thr('Test');
         } catch (e) {
@@ -82,25 +82,6 @@ describe('createErrorThrower()', function() {
         expect(errorInstance).toBeInstanceOf(CustomError);
         expect(errorInstance?.toString()).toBe('CustomError: Test');
         expect(errorInstance?.name).toBe('CustomError');
-    });
-});
-
-describe('ensureBigInt()', function() {
-    it('should produce BigInt from BigInt', function() {
-        expect(ensureBigInt(100n)).toBe(100n);
-    });
-
-    it('should produce BigInt from number', function() {
-        expect(ensureBigInt(100)).toBe(100n);
-    });
-
-    it('should produce BigInt from string', function() {
-        expect(ensureBigInt('100')).toBe(100n);
-    });
-
-    it('should produce BigInt from boolean', function() {
-        expect(ensureBigInt(true)).toBe(1n);
-        expect(ensureBigInt(false)).toBe(0n);
     });
 });
 

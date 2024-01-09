@@ -1,7 +1,7 @@
 import type {GeneralCallback, SimpleCallback} from './common-types';
 import type {CoordMatrix, CoordVector} from './life-map';
 import {LifeMap} from './life-map';
-import {call, obj, setImmediate} from './utils';
+import {call, obj, onNextTick} from './utils';
 
 export enum GameOfLifeState {
     Stopped = 'Stopped',
@@ -53,20 +53,18 @@ export class GameOfLife {
                 }
             }
 
-            console.log('changesTable', changesTable);
-
-            setImmediate(() => {
+            onNextTick(() => {
                 this._roundCallbacks.forEach(call);
             });
 
             if (!changed) {
                 this._state = GameOfLifeState.Completed;
-                setImmediate(() => {
+                onNextTick(() => {
                     this._stopCallbacks.forEach(call);
                 });
             } else if (this._stopFlag) {
                 this._state = GameOfLifeState.Stopped;
-                setImmediate(() => {
+                onNextTick(() => {
                     this._stopCallbacks.forEach(call);
                 });
             } else {
@@ -75,7 +73,7 @@ export class GameOfLife {
         };
 
         const makeRound = () => {
-            setImmediate(this._runRoundAsync, onRoundComplete);
+            onNextTick(this._runRoundAsync, onRoundComplete);
         };
 
         this._stopFlag = false;
@@ -83,7 +81,7 @@ export class GameOfLife {
 
         this._state = GameOfLifeState.Running;
 
-        setImmediate(() => {
+        onNextTick(() => {
             this._startCallbacks.forEach(call);
         });
     }
@@ -104,7 +102,7 @@ export class GameOfLife {
                 } else {
                     ++bigI;
                     if (bigI <= populated.bottom) {
-                        setImmediate(walkByColumn, bigI);
+                        onNextTick(walkByColumn, bigI);
                     } else {
                         done(changesTable);
                     }
@@ -128,14 +126,14 @@ export class GameOfLife {
             const keyX = bigX.toString();
             const keyY = bigY.toString();
             if (state && !(aliveSiblings === 2 || aliveSiblings === 3)) {
-                changesTable[keyX] = changesTable[keyX] || obj() as CoordVector;
+                changesTable[keyX] ??= obj() as CoordVector;
                 changesTable[keyX][keyY] = false;
             } else if (!state && aliveSiblings === 3) {
-                changesTable[keyX] = changesTable[keyX] || obj() as CoordVector;
+                changesTable[keyX] ??= obj() as CoordVector;
                 changesTable[keyX][keyY] = true;
             }
         };
 
-        setImmediate(walkByColumn, populated.top);
+        onNextTick(walkByColumn, populated.top);
     };
 }

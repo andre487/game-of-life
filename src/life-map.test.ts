@@ -1,5 +1,5 @@
+import {describe, expect, it} from '@jest/globals';
 import {LifeMap} from './life-map';
-import {describe, expect, it} from './test-common';
 
 describe('LifeMap', function() {
     describe('constructor()', function() {
