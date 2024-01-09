@@ -26,9 +26,7 @@ module.exports = {
         },
     ],
     ignorePatterns: [
-        'modules/*',
         'dist/*',
-        'bower_components/*',
     ],
     rules: {
         'indent': ['error', 4],
