@@ -1,5 +1,6 @@
 import type {U} from 'ts-toolbelt';
 import {GameOfLife, GameOfLifeState} from './game';
+import {SaveGameController} from './save-game-controller';
 import {createErrorThrower, CustomError} from './utils';
 
 export class ControlsViewError extends CustomError {}
@@ -14,9 +15,11 @@ export class ControlsView {
     private _stopButton: HTMLButtonElement;
     private _saveButton: HTMLButtonElement;
     private _loadButton: HTMLButtonElement;
+    private _saveGameController: SaveGameController;
 
-    constructor(game: GameOfLife) {
+    constructor(game: GameOfLife, saveGameController: SaveGameController) {
         this._game = game;
+        this._saveGameController = saveGameController;
 
         this._startButton = document.getElementById('start') as MaybeButton ?? thr('Button not found');
         this._stopButton = document.getElementById('stop') as MaybeButton ?? thr('Button not found');
@@ -26,17 +29,17 @@ export class ControlsView {
 
     init() {
         this._game.onStart(() => {
-            this._startButton.setAttribute('disabled', 'disabled');
+            this._startButton.setAttribute('disabled', '');
             this._stopButton.removeAttribute('disabled');
-            this._loadButton.setAttribute('disabled', 'disabled');
+            this._loadButton.setAttribute('disabled', '');
         });
 
         this._game.onStop(() => {
-            this._stopButton.setAttribute('disabled', 'disabled');
+            this._stopButton.setAttribute('disabled', '');
             this._startButton.removeAttribute('disabled');
-            // if (saves.saveExists()) {
-            //     loadButton.removeAttribute('disabled');
-            // }
+            if (this._saveGameController.doesSaveExist()) {
+                this._loadButton.removeAttribute('disabled');
+            }
             if (this._game.state == GameOfLifeState.Completed) {
                 // messages.showMessage('The game is completed!');
             }
@@ -51,16 +54,16 @@ export class ControlsView {
         };
 
         this._saveButton.onclick = () => {
-            // saves.saveGame(lifeMap);
+            this._saveGameController.save();
         };
 
         this._loadButton.onclick = () => {
-            // saves.loadGame(lifeMap);
+            this._saveGameController.load();
         };
 
-        // if (saves.saveExists()) {
-        //     loadButton.removeAttribute('disabled');
-        //     messages.showMessage('You have a saved game');
-        // }
+        if (this._saveGameController.doesSaveExist()) {
+            this._loadButton.removeAttribute('disabled');
+            // messages.showMessage('You have a saved game');
+        }
     }
 }
