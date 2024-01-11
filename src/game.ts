@@ -11,12 +11,15 @@ export enum GameOfLifeState {
 }
 
 export class GameOfLife {
+    public static readonly ROUND_TIME = 250;
+
     private _lifeMap: LifeMap;
     private _stopFlag = false;
     private _startCallbacks: SimpleCallback[] = [];
     private _stopCallbacks: SimpleCallback[] = [];
     private _roundCallbacks: SimpleCallback[] = [];
     private _state = GameOfLifeState.Stopped;
+    private _roundStartTime = 0;
 
     constructor(lifeMap: LifeMap) {
         this._lifeMap = lifeMap;
@@ -73,10 +76,12 @@ export class GameOfLife {
         };
 
         const makeRound = () => {
-            onNextTick(this._runRoundAsync, onRoundComplete);
+            const delta = GameOfLife.ROUND_TIME - (Date.now() - this._roundStartTime);
+            setTimeout(() => this._runRoundAsync(onRoundComplete), delta);
         };
 
         this._stopFlag = false;
+        this._roundStartTime = Date.now();
         makeRound();
 
         this._state = GameOfLifeState.Running;
@@ -87,6 +92,7 @@ export class GameOfLife {
     }
 
     private _runRoundAsync = (done: GeneralCallback<[CoordMatrix], void>) => {
+        this._roundStartTime = Date.now();
         const populated = this._lifeMap.populatedRect;
         const changesTable = obj() as CoordMatrix;
 
