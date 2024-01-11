@@ -15,16 +15,19 @@
                 <h1>Game of life</h1>
             </header>
             <div class="game">
-                <canvas class="map" id="map" width="600" height="400"></canvas>
+                <canvas class="map" id="map" width="600" height="600"></canvas>
                 <div class="controls">
                     <button id="start">Start</button>
                     <button id="stop" disabled="disabled">Stop</button>
                     <span class="delimiter"></span>
                     <button id="save">Save</button>
                     <button id="load" disabled="disabled">Load</button>
+                    <span class="delimiter"></span>
+                    <button id="reset">Reset</button>
                 </div>
             </div>
         </section>
         <script async type="module" src="./index.ts"></script>
+        <a class="classical-version-link" href="./classical-version/">Classical version</a>
     </body>
 </html>

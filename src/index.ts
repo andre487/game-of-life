@@ -17,7 +17,13 @@ onPageReady(function() {
     const mapView = new MapView(lifeMap);
     const game = new GameOfLife(lifeMap);
     const saveGameController = new SaveGameController(lifeMap);
-    const controlsView = new ControlsView(game, saveGameController, messagesView);
+    const controlsView = new ControlsView({
+        lifeMap,
+        mapView,
+        game,
+        saveGameController,
+        messagesView,
+    });
 
     game.onStart(mapView.endInput);
     game.onStop(mapView.beginInput);

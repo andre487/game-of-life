@@ -17,26 +17,19 @@ export class LifeMapError extends CustomError {}
 export class LifeMap {
     public static readonly POPULATED_DELTA = 30n;
 
-    private _container: CoordMatrix;
-    private _width: bigint;
-    private _height: bigint;
-    private _minX: bigint;
-    private _maxX: bigint;
-    private _minY: bigint;
-    private _maxY: bigint;
-    private _changeListeners: SimpleCallback[];
+    private _container: CoordMatrix = obj() as CoordMatrix;
+    private _width = 0n;
+    private _height = 0n;
+    private _minX = 0n;
+    private _maxX = 0n;
+    private _minY = 0n;
+    private _maxY = 0n;
+    private _changeListeners: SimpleCallback[] = [];
 
     constructor(mapWidth: BigIntSrc, mapHeight: BigIntSrc) {
-        this._container = obj() as CoordMatrix;
-
         this._width = BigInt(mapWidth);
         this._height = BigInt(mapHeight);
-
-        this._minX = this._height - 1n;
-        this._maxX = 0n;
-        this._minY = this._width - 1n;
-        this._maxY = 0n;
-        this._changeListeners = [];
+        this.reset();
     }
 
     get width(): bigint {
@@ -80,6 +73,16 @@ export class LifeMap {
         }
     }
 
+    reset() {
+        this._container = obj() as CoordMatrix;
+        this._minX = this._height - 1n;
+        this._maxX = 0n;
+        this._minY = this._width - 1n;
+        this._maxY = 0n;
+
+        this._changeListeners.forEach(call);
+    }
+
     serialize(): string {
         const data: Stringable[] = [this._width, this._height, this._minX, this._maxX, this._minY, this._maxY];
 
@@ -105,7 +108,7 @@ export class LifeMap {
         this._minY = BigInt(data[4]);
         this._maxY = BigInt(data[5]);
 
-        const container = obj() as CoordMatrix;
+        const container = this._container = obj() as CoordMatrix;
         for (const coordData of data[6].split('|')) {
             const [keyX, yStr] = coordData.split(':');
             container[keyX] = obj() as CoordVector;
@@ -114,7 +117,6 @@ export class LifeMap {
                 container[keyX][keyY] = true;
             }
         }
-        this._container = container;
 
         this._changeListeners.forEach(call);
     }
