@@ -1,4 +1,4 @@
-import type {BigIntSrc, ErrorClass, GeneralFn, SimpleFn, UnknownFn} from './common-types';
+import type {BigIntSrc, ErrorClass, GeneralFn, SimpleFn} from './common-types';
 
 export class CustomError extends Error {
     constructor(message?: string) {
@@ -60,28 +60,30 @@ export function enterValueToInterval(val: BigIntSrc, max: BigIntSrc): bigint {
     return res;
 }
 
-export function throttle(func: UnknownFn, time: number, defaultReturn?: unknown): UnknownFn {
+type ThrottledFunction<T extends unknown[]> = (argsArr: T) => void;
+type ThrottledArgType<T> = T extends (infer U)[] ? U : never;
+
+export function throttle<T extends unknown[]>(func: ThrottledFunction<T>, time: number) {
     let lastCall = 0;
-    let argContainer: unknown[][] = [];
-    return function(...args: unknown[]) {
+    let argContainer: T = [] as unknown as T; // 😿
+
+    return function(arg: ThrottledArgType<T>): void {
         const now = Date.now();
         if (lastCall === 0) {
             lastCall = now;
         }
 
         if (now - lastCall < time) {
-            argContainer.push(args);
-            return defaultReturn;
+            argContainer.push(arg);
+            return;
         }
         lastCall = now;
 
-        let res = defaultReturn;
         try {
-            res = func(argContainer);
+            func(argContainer);
         } catch (e) {
             window.reportError(e);
         }
-        argContainer = [];
-        return res;
+        argContainer = [] as unknown as T;
     };
 }

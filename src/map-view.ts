@@ -1,5 +1,4 @@
 import type {U} from 'ts-toolbelt';
-import {UnknownFn} from './common-types';
 import {LifeMap} from './life-map';
 import {createErrorThrower, CustomError, throttle} from './utils';
 
@@ -15,8 +14,8 @@ export enum MapViewState {
 }
 
 export class MapView {
-    public static readonly CELL_WIDTH = 15;
-    public static readonly CELL_HEIGHT = 15;
+    public static readonly CELL_WIDTH = 10;
+    public static readonly CELL_HEIGHT = 10;
 
     private _state: MapViewState = MapViewState.Initial;
 
@@ -82,7 +81,9 @@ export class MapView {
     renderWhenFrame = () => {
         if (this._curFrameRequest) {
             cancelAnimationFrame(this._curFrameRequest);
-            console.warn('Skip render frame');
+            if (process.env.NODE_ENV === 'development') {
+                console.warn('Skip render frame');
+            }
         }
 
         this._curFrameRequest = requestAnimationFrame(() => {
@@ -162,28 +163,22 @@ export class MapView {
 }
 
 class MapViewScrollHandler {
-    public static readonly SCROLL_TIMEOUT = 32;
+    public static readonly SCROLL_TIMEOUT = 50;
     private readonly _mapView: MapView;
-    private readonly _canvas: HTMLCanvasElement;
-    private readonly _onScrollThrottled: EventListener;
+    private readonly _onScrollThrottled: (e: WheelEvent) => void;
 
     constructor(mapView: MapView) {
         this._mapView = mapView;
-        this._canvas = this._mapView.canvas;
 
-        this._onScrollThrottled = throttle(
-            this._onScroll as UnknownFn,
-            MapViewScrollHandler.SCROLL_TIMEOUT,
-        ) as EventListener;
-
-        this._canvas.addEventListener('mousewheel', this._onScrollThrottled);
+        this._onScrollThrottled = throttle(this._onScroll, MapViewScrollHandler.SCROLL_TIMEOUT);
+        this._mapView.canvas.addEventListener('mousewheel', this._onScrollThrottled as EventListener);
     }
 
-    private _onScroll = (events: WheelEvent[][]) => {
+    private _onScroll = (events: WheelEvent[]) => {
         let deltaX = 0;
         let deltaY = 0;
 
-        for (const [event] of events) {
+        for (const event of events) {
             deltaX += event.deltaX;
             deltaY += event.deltaY;
         }
