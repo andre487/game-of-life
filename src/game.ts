@@ -1,4 +1,4 @@
-import type {GeneralCallback, SimpleCallback} from './common-types';
+import type {GeneralFn, SimpleFn} from './common-types';
 import type {CoordMatrix, CoordVector} from './life-map';
 import {LifeMap} from './life-map';
 import {call, obj, onNextTick} from './utils';
@@ -15,9 +15,9 @@ export class GameOfLife {
 
     private _lifeMap: LifeMap;
     private _stopFlag = false;
-    private _startCallbacks: SimpleCallback[] = [];
-    private _stopCallbacks: SimpleCallback[] = [];
-    private _roundCallbacks: SimpleCallback[] = [];
+    private _startCallbacks: SimpleFn[] = [];
+    private _stopCallbacks: SimpleFn[] = [];
+    private _roundCallbacks: SimpleFn[] = [];
     private _state = GameOfLifeState.Stopped;
     private _roundStartTime = 0;
 
@@ -29,15 +29,15 @@ export class GameOfLife {
         return this._state;
     }
 
-    onStart(cb: SimpleCallback) {
+    onStart(cb: SimpleFn) {
         this._startCallbacks.push(cb);
     }
 
-    onStop(cb: SimpleCallback) {
+    onStop(cb: SimpleFn) {
         this._stopCallbacks.push(cb);
     }
 
-    onRound(cb: SimpleCallback) {
+    onRound(cb: SimpleFn) {
         this._roundCallbacks.push(cb);
     }
 
@@ -91,7 +91,7 @@ export class GameOfLife {
         });
     }
 
-    private _runRoundAsync = (done: GeneralCallback<[CoordMatrix], void>) => {
+    private _runRoundAsync = (done: GeneralFn<[CoordMatrix], void>) => {
         this._roundStartTime = Date.now();
         const populated = this._lifeMap.populatedRect;
         const changesTable = obj() as CoordMatrix;

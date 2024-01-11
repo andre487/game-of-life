@@ -1,4 +1,4 @@
-import type {BigIntSrc, ErrorClass, GeneralCallback, SimpleCallback} from './common-types';
+import type {BigIntSrc, ErrorClass, GeneralFn, SimpleFn, UnknownFn} from './common-types';
 
 export class CustomError extends Error {
     constructor(message?: string) {
@@ -12,7 +12,7 @@ export function obj(): unknown {
     return Object.create(null);
 }
 
-export function call(func: SimpleCallback) {
+export function call(func: SimpleFn) {
     try {
         func();
     } catch (e) {
@@ -20,11 +20,11 @@ export function call(func: SimpleCallback) {
     }
 }
 
-export function onNextTick<T extends unknown[], U>(cb: GeneralCallback<T, U>, ...args: T) {
+export function onNextTick<T extends unknown[], U>(cb: GeneralFn<T, U>, ...args: T) {
     setTimeout(() => cb(...args), 0);
 }
 
-export function onPageReady(cb: SimpleCallback) {
+export function onPageReady(cb: SimpleFn) {
     function loadCb() {
         onNextTick(cb);
         document.removeEventListener('DOMContentLoaded', loadCb);
@@ -58,4 +58,30 @@ export function enterValueToInterval(val: BigIntSrc, max: BigIntSrc): bigint {
         res = res % bigMax;
     }
     return res;
+}
+
+export function throttle(func: UnknownFn, time: number, defaultReturn?: unknown): UnknownFn {
+    let lastCall = 0;
+    let argContainer: unknown[][] = [];
+    return function(...args: unknown[]) {
+        const now = Date.now();
+        if (lastCall === 0) {
+            lastCall = now;
+        }
+
+        if (now - lastCall < time) {
+            argContainer.push(args);
+            return defaultReturn;
+        }
+        lastCall = now;
+
+        let res = defaultReturn;
+        try {
+            res = func(argContainer);
+        } catch (e) {
+            window.reportError(e);
+        }
+        argContainer = [];
+        return res;
+    };
 }

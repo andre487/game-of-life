@@ -1,5 +1,5 @@
 import type {O} from 'ts-toolbelt';
-import type {BigIntSrc, SimpleCallback, Stringable} from './common-types';
+import type {BigIntSrc, SimpleFn, Stringable} from './common-types';
 import {call, CustomError, enterValueToInterval, obj} from './utils';
 
 export interface PopulatedRect {
@@ -24,7 +24,7 @@ export class LifeMap {
     private _maxX = 0n;
     private _minY = 0n;
     private _maxY = 0n;
-    private _changeListeners: SimpleCallback[] = [];
+    private _changeListeners: SimpleFn[] = [];
 
     constructor(mapWidth: BigIntSrc, mapHeight: BigIntSrc) {
         this._width = BigInt(mapWidth);
@@ -67,7 +67,7 @@ export class LifeMap {
         return Boolean(this._container[keyX]?.[keyY]);
     }
 
-    addChangeListener(listener: SimpleCallback) {
+    addChangeListener(listener: SimpleFn) {
         if (this._changeListeners.indexOf(listener) === -1) {
             this._changeListeners.push(listener);
         }
