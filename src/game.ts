@@ -11,12 +11,15 @@ export enum GameOfLifeState {
 }
 
 export class GameOfLife {
+    public static readonly ROUND_TIME = 250;
+
     private _lifeMap: LifeMap;
     private _stopFlag = false;
     private _startCallbacks: SimpleCallback[] = [];
     private _stopCallbacks: SimpleCallback[] = [];
     private _roundCallbacks: SimpleCallback[] = [];
     private _state = GameOfLifeState.Stopped;
+    private _roundStartTime = 0;
 
     constructor(lifeMap: LifeMap) {
         this._lifeMap = lifeMap;
@@ -73,10 +76,12 @@ export class GameOfLife {
         };
 
         const makeRound = () => {
-            onNextTick(this._runRoundAsync, onRoundComplete);
+            const delta = GameOfLife.ROUND_TIME - (Date.now() - this._roundStartTime);
+            setTimeout(() => this._runRoundAsync(onRoundComplete), delta);
         };
 
         this._stopFlag = false;
+        this._roundStartTime = Date.now();
         makeRound();
 
         this._state = GameOfLifeState.Running;
@@ -87,53 +92,38 @@ export class GameOfLife {
     }
 
     private _runRoundAsync = (done: GeneralCallback<[CoordMatrix], void>) => {
+        this._roundStartTime = Date.now();
         const populated = this._lifeMap.populatedRect;
         const changesTable = obj() as CoordMatrix;
 
-        const walkByColumn = (bigI: bigint) => {
-            let bigJ = populated.left;
-            makeStep();
+        for (let popI = populated.top; popI <= populated.bottom; ++popI) {
+            for (let popJ = populated.left; popJ <= populated.right; ++popJ) {
+                const state = this._lifeMap.isAlive(popI, popJ);
 
-            function makeStep() {
-                handleCell(bigI, bigJ);
-                ++bigJ;
-                if (bigJ <= populated.right) {
-                    makeStep();
-                } else {
-                    ++bigI;
-                    if (bigI <= populated.bottom) {
-                        onNextTick(walkByColumn, bigI);
-                    } else {
-                        done(changesTable);
+                let aliveSiblings = 0;
+                for (let i = -1; i <= 1; ++i) {
+                    for (let j = -1; j <= 1; ++j) {
+                        if (!(i === 0 && j === 0)) {
+                            const curI = popI + BigInt(i);
+                            const curJ = popJ + BigInt(j);
+                            aliveSiblings += this._lifeMap.isAlive(curI, curJ) ? 1 : 0;
+                        }
                     }
                 }
-            }
-        };
 
-        const handleCell = (bigX: bigint, bigY: bigint) => {
-            const state = this._lifeMap.isAlive(bigX, bigY);
-            let aliveSiblings = 0;
-            for (let i = -1; i <= 1; ++i) {
-                for (let j = -1; j <= 1; ++j) {
-                    if (!(i === 0 && j === 0)) {
-                        const curI = bigX + BigInt(i);
-                        const curJ = bigY + BigInt(j);
-                        aliveSiblings += this._lifeMap.isAlive(curI, curJ) ? 1 : 0;
-                    }
+                const keyI = popI.toString();
+                const keyJ = popJ.toString();
+
+                if (state && !(aliveSiblings === 2 || aliveSiblings === 3)) {
+                    changesTable[keyI] ??= obj() as CoordVector;
+                    changesTable[keyI][keyJ] = false;
+                } else if (!state && aliveSiblings === 3) {
+                    changesTable[keyI] ??= obj() as CoordVector;
+                    changesTable[keyI][keyJ] = true;
                 }
             }
+        }
 
-            const keyX = bigX.toString();
-            const keyY = bigY.toString();
-            if (state && !(aliveSiblings === 2 || aliveSiblings === 3)) {
-                changesTable[keyX] ??= obj() as CoordVector;
-                changesTable[keyX][keyY] = false;
-            } else if (!state && aliveSiblings === 3) {
-                changesTable[keyX] ??= obj() as CoordVector;
-                changesTable[keyX][keyY] = true;
-            }
-        };
-
-        onNextTick(walkByColumn, populated.top);
+        done(changesTable);
     };
 }

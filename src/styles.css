@@ -84,3 +84,7 @@ button:disabled {
     color: red;
     border-color: red;
 }
+
+.classical-version-link {
+    display: none;
+}
