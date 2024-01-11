@@ -1,6 +1,6 @@
 import type {U} from 'ts-toolbelt';
 import {LifeMap} from './life-map';
-import {createErrorThrower, CustomError} from './utils';
+import {createErrorThrower, CustomError, throttle} from './utils';
 
 export class MapViewError extends CustomError {}
 
@@ -31,6 +31,7 @@ export class MapView {
     private _cellsHorizontalOffset = 0n;
     private _cellsVerticalOffset = 0n;
     private _curFrameRequest: U.Nullable<number> = null;
+    private _scrollHandler: MapViewScrollHandler;
 
     constructor(lifeMap: LifeMap) {
         this._lifeMap = lifeMap;
@@ -49,6 +50,8 @@ export class MapView {
             this._initMapData();
             this.render();
         });
+
+        this._scrollHandler = new MapViewScrollHandler(this);
     }
 
     render = () => {
@@ -69,10 +72,18 @@ export class MapView {
         }
     };
 
+    moveBy = (deltaX: bigint, deltaY: bigint) => {
+        this._cellsHorizontalOffset += deltaX;
+        this._cellsVerticalOffset += deltaY;
+        this.renderWhenFrame();
+    };
+
     renderWhenFrame = () => {
         if (this._curFrameRequest) {
             cancelAnimationFrame(this._curFrameRequest);
-            console.warn('Skip render frame');
+            if (process.env.NODE_ENV === 'development') {
+                console.warn('Skip render frame');
+            }
         }
 
         this._curFrameRequest = requestAnimationFrame(() => {
@@ -96,6 +107,10 @@ export class MapView {
         this._state = MapViewState.Rendered;
         this._canvas.removeEventListener('click', this._inputListener);
     };
+
+    get canvas() {
+        return this._canvas;
+    }
 
     private _initMapData() {
         this._cellsByHorizontal = Math.floor(this._canvasWidth / MapView.CELL_WIDTH);
@@ -145,4 +160,31 @@ export class MapView {
             this._ctx.strokeRect(x, y, MapView.CELL_WIDTH, MapView.CELL_HEIGHT);
         }
     }
+}
+
+class MapViewScrollHandler {
+    public static readonly SCROLL_TIMEOUT = 50;
+    private readonly _mapView: MapView;
+    private readonly _onScrollThrottled: (e: WheelEvent) => void;
+
+    constructor(mapView: MapView) {
+        this._mapView = mapView;
+
+        this._onScrollThrottled = throttle(this._onScroll, MapViewScrollHandler.SCROLL_TIMEOUT);
+        this._mapView.canvas.addEventListener('mousewheel', this._onScrollThrottled as EventListener);
+    }
+
+    private _onScroll = (events: WheelEvent[]) => {
+        let deltaX = 0;
+        let deltaY = 0;
+
+        for (const event of events) {
+            deltaX += event.deltaX;
+            deltaY += event.deltaY;
+        }
+
+        const finalX = BigInt(Math.trunc(deltaX / MapView.CELL_WIDTH));
+        const finalY = BigInt(Math.trunc(deltaY / MapView.CELL_HEIGHT));
+        this._mapView.moveBy(finalX, finalY);
+    };
 }
