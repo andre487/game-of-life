@@ -163,7 +163,19 @@ export class MapView {
 }
 
 class MapViewScrollHandler {
-    public static readonly SCROLL_TIMEOUT = 50;
+    public static readonly SCROLL_TIMEOUT = 32;
+    public static readonly KEY_ACTIONS: Record<string, string | undefined> = {
+        'KeyW': 'up',
+        'KeyA': 'left',
+        'KeyS': 'down',
+        'KeyD': 'right',
+
+        'ArrowUp': 'up',
+        'ArrowLeft': 'left',
+        'ArrowDown': 'down',
+        'ArrowRight': 'right',
+    };
+
     private readonly _mapView: MapView;
     private readonly _onScrollThrottled: (e: WheelEvent) => void;
 
@@ -172,6 +184,7 @@ class MapViewScrollHandler {
 
         this._onScrollThrottled = throttle(this._onScroll, MapViewScrollHandler.SCROLL_TIMEOUT);
         this._mapView.canvas.addEventListener('mousewheel', this._onScrollThrottled as EventListener);
+        window.addEventListener('keydown', this._onKey);
     }
 
     private _onScroll = (events: WheelEvent[]) => {
@@ -186,5 +199,34 @@ class MapViewScrollHandler {
         const finalX = BigInt(Math.trunc(deltaX / MapView.CELL_WIDTH));
         const finalY = BigInt(Math.trunc(deltaY / MapView.CELL_HEIGHT));
         this._mapView.moveBy(finalX, finalY);
+    };
+
+    private _onKey = (e: KeyboardEvent) => {
+        const action = MapViewScrollHandler.KEY_ACTIONS[e.code];
+        if (!action) {
+            return;
+        }
+
+        e.preventDefault();
+
+        let deltaX = 0n;
+        let deltaY = 0n;
+
+        switch (action) {
+        case 'up':
+            deltaY += 1n;
+            break;
+        case 'left':
+            deltaX -= 1n;
+            break;
+        case 'down':
+            deltaY -= 1n;
+            break;
+        case 'right':
+            deltaX += 1n;
+            break;
+        }
+
+        this._mapView.moveBy(deltaX, deltaY);
     };
 }
