@@ -97,3 +97,5 @@ export function throttle<T extends unknown[]>(func: ThrottledFunction<T>, time: 
         }
     };
 }
+
+export const numberFormatter = new Intl.NumberFormat(navigator.language);
