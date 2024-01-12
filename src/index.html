@@ -16,9 +16,18 @@
             </header>
             <div class="game">
                 <div class="map-params">
-                    X: <span id="map-params__item-x" class="map-params__item-value">0</span>
-                    <span class="delimiter"></span>
-                    Y: <span id="map-params__item-y" class="map-params__item-value">0</span>
+                    <div class="map-params__item">
+                        Map shift:
+                        X: <span id="map-params__item-x" class="map-params__item-value">0</span>
+                        <span class="delimiter"></span>
+                        Y: <span id="map-params__item-y" class="map-params__item-value">0</span>
+                    </div>
+                    <div class="map-params__item">
+                        Populated:
+                        <span id="map-params__item-populated-width" class="map-params__item-value">0</span>
+                        &times;
+                        <span id="map-params__item-populated-height" class="map-params__item-value">0</span>
+                    </div>
                 </div>
                 <canvas class="map" id="map" width="600" height="600"></canvas>
                 <div class="controls">

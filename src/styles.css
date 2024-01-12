@@ -45,7 +45,11 @@ button:disabled {
 }
 
 .map-params {
-    margin: 5px 0;
+    margin: 10px 0;
+}
+
+.map-params__item + .map-params__item {
+    margin-top: 5px;
 }
 
 .controls {
