@@ -1,7 +1,7 @@
 import type {U} from 'ts-toolbelt';
 import {ObjMap} from './common-types';
 import {LifeMap} from './life-map';
-import {bigIntMinMax, createErrorThrower, CustomError, throttle} from './utils';
+import {bigIntMinMax, createErrorThrower, CustomError, numberFormatter, throttle} from './utils';
 
 export class MapViewError extends CustomError {}
 
@@ -31,6 +31,8 @@ export class MapView {
     private _cellsHorizontalOffset = 0n;
     private _cellsVerticalOffset = 0n;
     private _curFrameRequest: U.Nullable<number> = null;
+    private _xValue: HTMLSpanElement;
+    private _yValue: HTMLSpanElement;
 
     constructor(lifeMap: LifeMap) {
         this._lifeMap = lifeMap;
@@ -39,6 +41,9 @@ export class MapView {
         this._canvasRect = this._canvas.getBoundingClientRect();
         this._canvasWidth = this._canvas.clientWidth;
         this._canvasHeight = this._canvas.clientHeight;
+
+        this._xValue = document.getElementById('map-params__item-x') ?? thr('No X value');
+        this._yValue = document.getElementById('map-params__item-y') ?? thr('No Y value');
 
         this._ctx = this._canvas.getContext('2d') ?? thr('Failed to create context');
         this._ctx.fillStyle = '#708090';
@@ -69,6 +74,9 @@ export class MapView {
         if (this._state !== MapViewState.Input) {
             this._state = MapViewState.Rendered;
         }
+
+        this._xValue.innerHTML = numberFormatter.format(this._cellsVerticalOffset);
+        this._yValue.innerHTML = numberFormatter.format(this._cellsHorizontalOffset);
     };
 
     moveBy = (deltaX: bigint, deltaY: bigint) => {

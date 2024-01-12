@@ -44,6 +44,10 @@ button:disabled {
     text-align: left;
 }
 
+.map-params {
+    margin: 5px 0;
+}
+
 .controls {
     margin-top: 10px;
 }
