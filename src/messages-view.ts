@@ -43,6 +43,9 @@ export class MessagesView {
 
     bindToErrors() {
         window.addEventListener('error', (event: ErrorEvent) => {
+            if (event.filename.startsWith('chrome')) {
+                return;
+            }
             this.showError(`An error has occurred: ${event.error}`);
         });
 
