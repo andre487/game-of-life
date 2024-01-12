@@ -16,6 +16,7 @@
             </header>
             <div class="game">
                 <div class="map-params">
+                    <button class="help-button" id="help-button">Help</button>
                     <div class="map-params__item">
                         Map shift:
                         X: <span id="map-params__item-x" class="map-params__item-value">0</span>
@@ -46,5 +47,34 @@
         </section>
         <script async type="module" src="./index.ts"></script>
         <a class="classical-version-link" href="./classical-version/">Classical version</a>
+
+        <section class="help help_hidden" id="help">
+            <h2>Help</h2>
+            <h3>Basics</h3>
+            <p>
+                This is <a rel="noopener" target="_blank" href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">
+                Conway&rsquo;s Game of&nbsp;Life</a>.
+            </p>
+            <p>
+                You can place figures to&nbsp;the field by&nbsp;mouse. A&nbsp;lot of&nbsp;patterns are described
+                on
+                <a rel="noopener" target="_blank" href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life#Examples_of_patterns">Wikipedia</a>.
+            </p>
+            <h3>Controls</h3>
+            <p>When you have set up&nbsp;the map, you can start the game with Start button.</p>
+            <p>You can stop the game any time with Stop button and make changes on&nbsp;the map.</p>
+            <p>You can save and load game with Save and Load buttons. Game saves to&nbsp;localStorage.</p>
+            <p>Reset button clears the map.</p>
+            <h3>Navigation</h3>
+            <p>
+                When mouse cursor is&nbsp;over the field, you can navigate on&nbsp;field by
+                mouse wheel or&nbsp;arrow keys or&nbsp;WASD keys.
+            </p>
+            <p>
+                You can zoom field by&nbsp;Ctrl+Wheel or&nbsp;Cmd+Wheel.
+                Or&nbsp;by&nbsp;arrow keys or&nbsp;WASD with Ctrl or&nbsp;Cmd.
+            </p>
+            <button id="help__close" class="help__close">&times;</button>
+        </section>
     </body>
 </html>
