@@ -60,6 +60,17 @@ export function enterValueToInterval(val: BigIntSrc, max: BigIntSrc): bigint {
     return res;
 }
 
+export function bigIntMinMax(val: bigint, min: bigint, max: bigint): bigint {
+    let res = val;
+    if (res < min) {
+        res = min;
+    }
+    if (res > max) {
+        res = max;
+    }
+    return res;
+}
+
 type ThrottledFunction<T extends unknown[]> = GeneralFn<[T], void>;
 type ThrottledArgType<T> = T extends (infer G)[] ? G : never;
 type ThrottleResultFunction<T> = GeneralFn<[ThrottledArgType<T>], void>;

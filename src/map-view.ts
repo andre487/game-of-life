@@ -1,7 +1,7 @@
 import type {U} from 'ts-toolbelt';
 import {ObjMap} from './common-types';
 import {LifeMap} from './life-map';
-import {createErrorThrower, CustomError, throttle} from './utils';
+import {bigIntMinMax, createErrorThrower, CustomError, throttle} from './utils';
 
 export class MapViewError extends CustomError {}
 
@@ -72,8 +72,8 @@ export class MapView {
     };
 
     moveBy = (deltaX: bigint, deltaY: bigint) => {
-        this._cellsHorizontalOffset += deltaX;
-        this._cellsVerticalOffset += deltaY;
+        this._cellsHorizontalOffset = bigIntMinMax(this._cellsHorizontalOffset + deltaX, 0n, this._lifeMap.width);
+        this._cellsVerticalOffset = bigIntMinMax(this._cellsVerticalOffset + deltaY, 0n, this._lifeMap.height);
         this.renderWhenFrame();
     };
 
