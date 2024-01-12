@@ -1,5 +1,5 @@
 import type {GeneralFn, SimpleFn} from './common-types';
-import type {CoordMatrix, CoordVector} from './life-map';
+import type {CoordMatrix} from './life-map';
 import {LifeMap} from './life-map';
 import {call, obj, onNextTick} from './utils';
 
@@ -94,7 +94,7 @@ export class GameOfLife {
     private _runRoundAsync = (done: GeneralFn<[CoordMatrix], void>) => {
         this._roundStartTime = Date.now();
         const populated = this._lifeMap.populatedRect;
-        const changesTable = obj() as CoordMatrix;
+        const changesTable: CoordMatrix = obj();
 
         for (let popI = populated.top; popI <= populated.bottom; ++popI) {
             for (let popJ = populated.left; popJ <= populated.right; ++popJ) {
@@ -115,10 +115,10 @@ export class GameOfLife {
                 const keyJ = popJ.toString();
 
                 if (state && !(aliveSiblings === 2 || aliveSiblings === 3)) {
-                    changesTable[keyI] ??= obj() as CoordVector;
+                    changesTable[keyI] ??= obj();
                     changesTable[keyI][keyJ] = false;
                 } else if (!state && aliveSiblings === 3) {
-                    changesTable[keyI] ??= obj() as CoordVector;
+                    changesTable[keyI] ??= obj();
                     changesTable[keyI][keyJ] = true;
                 }
             }

@@ -1,6 +1,7 @@
 import type {U} from 'ts-toolbelt';
+import {ObjMap} from './common-types';
 import {LifeMap} from './life-map';
-import {createErrorThrower, CustomError, throttle} from './utils';
+import {bigIntMinMax, createErrorThrower, CustomError, throttle} from './utils';
 
 export class MapViewError extends CustomError {}
 
@@ -10,7 +11,6 @@ export enum MapViewState {
     Initial = 'Initial',
     Rendered = 'Rendered',
     Input = 'Input',
-    Life = 'Life',
 }
 
 export class MapView {
@@ -31,7 +31,6 @@ export class MapView {
     private _cellsHorizontalOffset = 0n;
     private _cellsVerticalOffset = 0n;
     private _curFrameRequest: U.Nullable<number> = null;
-    private _scrollHandler: MapViewScrollHandler;
 
     constructor(lifeMap: LifeMap) {
         this._lifeMap = lifeMap;
@@ -51,7 +50,7 @@ export class MapView {
             this.render();
         });
 
-        this._scrollHandler = new MapViewScrollHandler(this);
+        new MapViewScrollHandler(this);
     }
 
     render = () => {
@@ -73,17 +72,17 @@ export class MapView {
     };
 
     moveBy = (deltaX: bigint, deltaY: bigint) => {
-        this._cellsHorizontalOffset += deltaX;
-        this._cellsVerticalOffset += deltaY;
+        this._cellsHorizontalOffset = bigIntMinMax(this._cellsHorizontalOffset + deltaX, 0n, this._lifeMap.width);
+        this._cellsVerticalOffset = bigIntMinMax(this._cellsVerticalOffset + deltaY, 0n, this._lifeMap.height);
         this.renderWhenFrame();
     };
 
     renderWhenFrame = () => {
         if (this._curFrameRequest) {
-            cancelAnimationFrame(this._curFrameRequest);
             if (process.env.NODE_ENV === 'development') {
                 console.warn('Skip render frame');
             }
+            return;
         }
 
         this._curFrameRequest = requestAnimationFrame(() => {
@@ -163,15 +162,35 @@ export class MapView {
 }
 
 class MapViewScrollHandler {
-    public static readonly SCROLL_TIMEOUT = 50;
+    public static readonly SCROLL_TIMEOUT = 32;
+    public static readonly KEY_TIMEOUT = 16;
+
+    public static readonly KEY_ACTIONS: ObjMap = {
+        KeyW: 'up',
+        KeyA: 'left',
+        KeyS: 'down',
+        KeyD: 'right',
+
+        ArrowUp: 'up',
+        ArrowLeft: 'left',
+        ArrowDown: 'down',
+        ArrowRight: 'right',
+
+        __proto__: null,
+    };
+
     private readonly _mapView: MapView;
     private readonly _onScrollThrottled: (e: WheelEvent) => void;
+    private readonly _onKeyThrottled: (arg: KeyboardEvent) => void;
 
     constructor(mapView: MapView) {
         this._mapView = mapView;
 
         this._onScrollThrottled = throttle(this._onScroll, MapViewScrollHandler.SCROLL_TIMEOUT);
+        this._onKeyThrottled = throttle(this._onKey, MapViewScrollHandler.KEY_TIMEOUT);
+
         this._mapView.canvas.addEventListener('mousewheel', this._onScrollThrottled as EventListener);
+        window.addEventListener('keydown', this._onKeyThrottled as EventListener);
     }
 
     private _onScroll = (events: WheelEvent[]) => {
@@ -186,5 +205,29 @@ class MapViewScrollHandler {
         const finalX = BigInt(Math.trunc(deltaX / MapView.CELL_WIDTH));
         const finalY = BigInt(Math.trunc(deltaY / MapView.CELL_HEIGHT));
         this._mapView.moveBy(finalX, finalY);
+    };
+
+    private _onKey = (events: KeyboardEvent[]) => {
+        let deltaX = 0n;
+        let deltaY = 0n;
+
+        for (const e of events) {
+            switch (MapViewScrollHandler.KEY_ACTIONS[e.code]) {
+            case 'up':
+                deltaY += 1n;
+                break;
+            case 'left':
+                deltaX += 1n;
+                break;
+            case 'down':
+                deltaY -= 1n;
+                break;
+            case 'right':
+                deltaX -= 1n;
+                break;
+            }
+        }
+
+        this._mapView.moveBy(deltaX, deltaY);
     };
 }

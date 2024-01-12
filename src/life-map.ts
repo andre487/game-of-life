@@ -1,5 +1,5 @@
 import type {O} from 'ts-toolbelt';
-import type {BigIntSrc, SimpleFn, Stringable} from './common-types';
+import type {BigIntSrc, HollowObj, SimpleFn, Stringable} from './common-types';
 import {call, CustomError, enterValueToInterval, obj} from './utils';
 
 export interface PopulatedRect {
@@ -9,15 +9,15 @@ export interface PopulatedRect {
     left: bigint;
 }
 
-export type CoordVector = Record<string, boolean | undefined>;
-export type CoordMatrix = Record<string, CoordVector>;
+export type CoordVector = HollowObj & Record<string, boolean | undefined>;
+export type CoordMatrix = HollowObj & Record<string, CoordVector>;
 
 export class LifeMapError extends CustomError {}
 
 export class LifeMap {
     public static readonly POPULATED_DELTA = 30n;
 
-    private _container: CoordMatrix = obj() as CoordMatrix;
+    private _container: CoordMatrix = obj();
     private _width = 0n;
     private _height = 0n;
     private _minX = 0n;
@@ -74,7 +74,7 @@ export class LifeMap {
     }
 
     reset() {
-        this._container = obj() as CoordMatrix;
+        this._container = obj();
         this._minX = this._height - 1n;
         this._maxX = 0n;
         this._minY = this._width - 1n;
@@ -108,10 +108,10 @@ export class LifeMap {
         this._minY = BigInt(data[4]);
         this._maxY = BigInt(data[5]);
 
-        const container = this._container = obj() as CoordMatrix;
+        const container = this._container = obj();
         for (const coordData of data[6].split('|')) {
             const [keyX, yStr] = coordData.split(':');
-            container[keyX] = obj() as CoordVector;
+            container[keyX] = obj();
 
             for (const keyY of yStr.split(',')) {
                 container[keyX][keyY] = true;
@@ -130,7 +130,7 @@ export class LifeMap {
         const keyY = bigY.toString();
 
         if (status) {
-            this._container[keyX] ??= obj() as CoordVector;
+            this._container[keyX] ??= obj();
             this._container[keyX][keyY] = true;
         } else if (!status && this._container[keyX]) {
             delete this._container[keyX][keyY];
