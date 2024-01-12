@@ -296,28 +296,44 @@ class MapViewMouseHandler {
     };
 
     private _onKey = (events: KeyboardEvent[]) => {
-        let deltaX = 0n;
-        let deltaY = 0n;
+        let deltaX = 0;
+        let deltaY = 0;
+        let wasMod = false;
 
         for (const e of events) {
-            switch (MapViewMouseHandler.KEY_ACTIONS[e.code]) {
+            const action = MapViewMouseHandler.KEY_ACTIONS[e.code];
+            switch (action) {
             case 'up':
-                deltaY += 1n;
+                deltaY += 1;
                 break;
             case 'left':
-                deltaX += 1n;
+                deltaX += 1;
                 break;
             case 'down':
-                deltaY -= 1n;
+                deltaY -= 1;
                 break;
             case 'right':
-                deltaX -= 1n;
+                deltaX -= 1;
                 break;
+            }
+
+            if (action && (e.metaKey || e.ctrlKey)) {
+                wasMod = true;
             }
         }
 
+        if (wasMod && (deltaX || deltaY)) {
+            let finalDelta = deltaX;
+            if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                finalDelta = deltaY;
+            }
+            finalDelta = Math.round(finalDelta);
+            this._mapView.resizeCellsBy(finalDelta);
+            return;
+        }
+
         if (deltaX || deltaY) {
-            this._mapView.moveBy(deltaX, deltaY);
+            this._mapView.moveBy(BigInt(deltaX), BigInt(deltaY));
         }
     };
 
