@@ -64,7 +64,7 @@ export class MapView {
             this.render();
         });
 
-        new MapViewMouseHandler(this);
+        new MapViewNavigationHandler(this);
     }
 
     get canvas() {
@@ -233,7 +233,7 @@ export class MapView {
     }
 }
 
-class MapViewMouseHandler {
+class MapViewNavigationHandler {
     public static readonly SCROLL_TIMEOUT = 32;
     public static readonly KEY_TIMEOUT = 16;
     public static readonly ZOOM_TIMEOUT = 75;
@@ -252,7 +252,10 @@ class MapViewMouseHandler {
         __proto__: null,
     };
 
+    private _pointerLocked = false;
+
     private readonly _mapView: MapView;
+
     private readonly _onScrollThrottled: (e: WheelEvent) => void;
     private readonly _onZoomThrottled: (arg: WheelEvent) => void;
     private readonly _onKeyThrottled: (arg: KeyboardEvent) => void;
@@ -260,15 +263,19 @@ class MapViewMouseHandler {
     constructor(mapView: MapView) {
         this._mapView = mapView;
 
-        this._onScrollThrottled = throttle(this._onScroll, MapViewMouseHandler.SCROLL_TIMEOUT);
-        this._onZoomThrottled = throttle(this._onZoom, MapViewMouseHandler.ZOOM_TIMEOUT);
-        this._onKeyThrottled = throttle(this._onKey, MapViewMouseHandler.KEY_TIMEOUT);
+        this._onScrollThrottled = throttle(this._onScroll, MapViewNavigationHandler.SCROLL_TIMEOUT);
+        this._onZoomThrottled = throttle(this._onZoom, MapViewNavigationHandler.ZOOM_TIMEOUT);
+        this._onKeyThrottled = throttle(this._onKey, MapViewNavigationHandler.KEY_TIMEOUT);
 
         const canvas = this._mapView.canvas;
         canvas.addEventListener('mousewheel', this._onScrollThrottled as EventListener);
         canvas.addEventListener('mousewheel', this._onZoomThrottled as EventListener);
+        canvas.addEventListener('mouseenter', this._lockPointer);
+        canvas.addEventListener('mouseleave', this._unlockPointer);
+        canvas.addEventListener('mousewheel', this._defaultPreventer);
 
         window.addEventListener('keydown', this._onKeyThrottled as EventListener);
+        window.addEventListener('keydown', this._defaultPreventer);
     }
 
     private _onScroll = (events: WheelEvent[]) => {
@@ -296,12 +303,16 @@ class MapViewMouseHandler {
     };
 
     private _onKey = (events: KeyboardEvent[]) => {
+        if (!this._pointerLocked) {
+            return;
+        }
+
         let deltaX = 0;
         let deltaY = 0;
         let wasMod = false;
 
         for (const e of events) {
-            const action = MapViewMouseHandler.KEY_ACTIONS[e.code];
+            const action = MapViewNavigationHandler.KEY_ACTIONS[e.code];
             switch (action) {
             case 'up':
                 deltaY += 1;
@@ -328,7 +339,7 @@ class MapViewMouseHandler {
                 finalDelta = deltaY;
             }
             finalDelta = Math.round(finalDelta);
-            this._mapView.resizeCellsBy(finalDelta);
+            this._mapView.resizeCellsBy(-finalDelta);
             return;
         }
 
@@ -345,8 +356,8 @@ class MapViewMouseHandler {
             if (!event.metaKey && !event.ctrlKey) {
                 continue;
             }
-            deltaX += event.deltaX;
-            deltaY += event.deltaY;
+            deltaX -= event.deltaX;
+            deltaY -= event.deltaY;
         }
 
         if (!deltaX && !deltaY) {
@@ -360,5 +371,35 @@ class MapViewMouseHandler {
         finalDelta = Math.round(finalDelta / 10);
 
         this._mapView.resizeCellsBy(finalDelta);
+    };
+
+    private _lockPointer = () => {
+        this._pointerLocked = true;
+    };
+
+    private _unlockPointer = () => {
+        this._pointerLocked = false;
+    };
+
+    private _defaultPreventer = (e: Event) => {
+        if (!this._pointerLocked) {
+            return;
+        }
+
+        const isKey = e instanceof KeyboardEvent;
+        const isMouse = e instanceof MouseEvent;
+
+        if ((isKey || isMouse) && (e.shiftKey || e.altKey)) {
+            return;
+        }
+
+        if (
+            isKey && (e.ctrlKey || e.metaKey) &&
+            (e.code === 'Digit0' || e.code === 'Minus' || e.code === 'Equal')
+        ) {
+            return;
+        }
+
+        e.preventDefault();
     };
 }
