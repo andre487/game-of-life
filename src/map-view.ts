@@ -1,7 +1,7 @@
 import type {U} from 'ts-toolbelt';
 import {ObjMap} from './common-types';
 import {LifeMap} from './life-map';
-import {bigIntMinMax, createErrorThrower, CustomError, throttle} from './utils';
+import {bigIntMinMax, createErrorThrower, CustomError, numberFormatter, throttle} from './utils';
 
 export class MapViewError extends CustomError {}
 
@@ -31,6 +31,10 @@ export class MapView {
     private _cellsHorizontalOffset = 0n;
     private _cellsVerticalOffset = 0n;
     private _curFrameRequest: U.Nullable<number> = null;
+    private _xValue: HTMLSpanElement;
+    private _yValue: HTMLSpanElement;
+    private _popWidth: HTMLSpanElement;
+    private _popHeight: HTMLSpanElement;
 
     constructor(lifeMap: LifeMap) {
         this._lifeMap = lifeMap;
@@ -43,6 +47,11 @@ export class MapView {
         this._ctx = this._canvas.getContext('2d') ?? thr('Failed to create context');
         this._ctx.fillStyle = '#708090';
         this._ctx.strokeStyle = '#e6e6fa';
+
+        this._xValue = document.getElementById('map-params__item-x') ?? thr('No X value');
+        this._yValue = document.getElementById('map-params__item-y') ?? thr('No Y value');
+        this._popWidth = document.getElementById('map-params__item-populated-width') ?? thr('No pop width value');
+        this._popHeight = document.getElementById('map-params__item-populated-height') ?? thr('No pop width value');
 
         this._initMapData();
         this._lifeMap.addChangeListener(() => {
@@ -69,6 +78,17 @@ export class MapView {
         if (this._state !== MapViewState.Input) {
             this._state = MapViewState.Rendered;
         }
+
+        this._xValue.innerHTML = numberFormatter.format(this._cellsVerticalOffset);
+        this._yValue.innerHTML = numberFormatter.format(this._cellsHorizontalOffset);
+
+        const populated = this._lifeMap.populatedRect;
+        this._popWidth.innerHTML = numberFormatter.format(
+            bigIntMinMax(populated.right - populated.left, 0n, this._lifeMap.width),
+        );
+        this._popHeight.innerHTML = numberFormatter.format(
+            bigIntMinMax(populated.bottom - populated.top, 0n, this._lifeMap.height),
+        );
     };
 
     moveBy = (deltaX: bigint, deltaY: bigint) => {
