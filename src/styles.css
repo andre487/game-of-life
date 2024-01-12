@@ -1,25 +1,45 @@
-html {
-    overflow: hidden;
+:root {
+    --background: white;
+    --default-color: #708090;
+    --shadow-color: black;
+    --button-text-color: white;
+    --button-active-color: #505050;
+    --button-disabled-color: #ccc;
+    --button-disabled-text-color: #f1f1f1;
+    --link-default-color: #666;
+    --link-hover-color: #999;
+    --link-active-color: red;
+    --error-color: red;
+    --dark-background: #e6e6fa;
+
+    font-size: 14px;
+    font-family: -apple-system, 'BlinkMacSystemFont',
+    'Segoe UI', 'Roboto',
+    'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
 }
 
 body {
-    overflow: hidden;
-    font: 12px sans-serif;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+    margin: 0;
     user-select: none;
-    color: #708090;
+    color: var(--default-color);
 }
 
 h1 {
-    margin: 0;
+    margin: 10px 0 0 0;
+}
+
+h2 {
+    margin: 10px 0;
+}
+
+h3 {
+    margin: 10px 0;
 }
 
 button {
     border: none;
-    background: #708090;
-    color: white;
+    background: var(--default-color);
+    color: var(--button-text-color);
     cursor: pointer;
     padding: 5px 10px;
     border-radius: 3px;
@@ -27,12 +47,24 @@ button {
 }
 
 button:active {
-    background: #505050;
+    background: var(--button-active-color);
 }
 
 button:disabled {
-    background: #ccc;
-    color: #f1f1f1;
+    background: var(--button-disabled-color);
+    color: var(--button-disabled-text-color);
+}
+
+a:link, a:visited {
+    color: var(--link-default-color);
+}
+
+a:hover {
+    color: var(--link-hover-color);
+}
+
+a:active {
+    color: var(--link-active-color);
 }
 
 .wrapper {
@@ -46,6 +78,11 @@ button:disabled {
 
 .map-params {
     margin: 10px 0;
+    overflow: hidden;
+}
+
+.help-button {
+    float: right;
 }
 
 .map-params__item + .map-params__item {
@@ -75,9 +112,10 @@ button:disabled {
     width: 200px;
     padding: 20px;
     margin-bottom: 10px;
-    border: 1px solid #708090;
-    color: #708090;
+    border: 1px solid var(--default-color);
+    color: var(--default-color);
     border-radius: 5px;
+    background: var(--background);
 }
 
 .messages-container .close {
@@ -89,10 +127,42 @@ button:disabled {
 }
 
 .messages-container .error {
-    color: red;
-    border-color: red;
+    color: var(--error-color);
+    border-color: var(--error-color);
 }
 
 .classical-version-link {
     display: none;
+}
+
+.help {
+    --width: 600px;
+    --height: 420px;
+
+    cursor: initial;
+    user-select: text;
+
+    width: var(--width);
+    height: var(--height);
+
+    position: absolute;
+    top: calc((100vh - var(--height)) / 2);
+    left: calc((100vw - var(--width)) / 2);
+
+    padding: 5px 10px;
+
+    background: var(--background);
+    border: 1px solid var(--default-color);
+    border-radius: 10px;
+    box-shadow: var(--shadow-color) 2px 2px 2px;
+}
+
+.help_hidden {
+    display: none;
+}
+
+.help__close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
 }
