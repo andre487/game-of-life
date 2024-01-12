@@ -1,6 +1,7 @@
 import type {U} from 'ts-toolbelt';
 import {ObjMap} from './common-types';
 import {LifeMap} from './life-map';
+import * as styles from './styles';
 import {bigIntMinMax, createErrorThrower, CustomError, numberFormatter, throttle} from './utils';
 
 export class MapViewError extends CustomError {}
@@ -14,8 +15,10 @@ export enum MapViewState {
 }
 
 export class MapView {
-    public static readonly CELL_WIDTH = 10;
-    public static readonly CELL_HEIGHT = 10;
+    public static readonly DEFAULT_CELL_WIDTH = 10;
+    public static readonly DEFAULT_CELL_HEIGHT = 10;
+    public static readonly MIN_CELL_SIZE = 3;
+    public static readonly MAX_CELL_SIZE = 20;
 
     private _state: MapViewState = MapViewState.Initial;
 
@@ -23,6 +26,9 @@ export class MapView {
     private readonly _canvasRect: DOMRect;
     private readonly _canvasWidth: number;
     private readonly _canvasHeight: number;
+
+    private _cellWidth = MapView.DEFAULT_CELL_WIDTH;
+    private _cellHeight = MapView.DEFAULT_CELL_HEIGHT;
 
     private readonly _ctx: CanvasRenderingContext2D;
     private readonly _lifeMap: LifeMap;
@@ -45,8 +51,8 @@ export class MapView {
         this._canvasHeight = this._canvas.clientHeight;
 
         this._ctx = this._canvas.getContext('2d') ?? thr('Failed to create context');
-        this._ctx.fillStyle = '#708090';
-        this._ctx.strokeStyle = '#e6e6fa';
+        this._ctx.fillStyle = styles.defaultColor;
+        this._ctx.strokeStyle = styles.darkBackgroundColor;
 
         this._xValue = document.getElementById('map-params__item-x') ?? thr('No X value');
         this._yValue = document.getElementById('map-params__item-y') ?? thr('No Y value');
@@ -59,7 +65,19 @@ export class MapView {
             this.render();
         });
 
-        new MapViewScrollHandler(this);
+        new MapViewNavigationHandler(this);
+    }
+
+    get canvas() {
+        return this._canvas;
+    }
+
+    get cellWidth() {
+        return this._cellWidth;
+    }
+
+    get cellHeight() {
+        return this._cellHeight;
     }
 
     render = () => {
@@ -97,6 +115,41 @@ export class MapView {
         this.renderWhenFrame();
     };
 
+    moveToCenter = () => {
+        this._setCenterOffsets();
+        this.renderWhenFrame();
+    };
+
+    resizeCellsBy(delta: number) {
+        const intDelta = Math.trunc(delta);
+        const newWidth = this._cellWidth + intDelta;
+        const newHeight = this._cellHeight + intDelta;
+        this.setCellsSizes(newWidth, newHeight);
+    }
+
+    resetCellsSize() {
+        this.setCellsSizes(MapView.DEFAULT_CELL_WIDTH, MapView.DEFAULT_CELL_HEIGHT);
+    }
+
+    setCellsSizes(width: number, height: number) {
+        let changed = false;
+
+        if (this._cellWidth !== width && width >= MapView.MIN_CELL_SIZE && width <= MapView.MAX_CELL_SIZE) {
+            this._cellWidth = width;
+            changed = true;
+        }
+
+        if (this._cellHeight !== height && height >= MapView.MIN_CELL_SIZE && height <= MapView.MAX_CELL_SIZE) {
+            this._cellHeight = height;
+            changed = true;
+        }
+
+        if (changed) {
+            this._initMapData();
+            this.renderWhenFrame();
+        }
+    }
+
     renderWhenFrame = () => {
         if (this._curFrameRequest) {
             if (process.env.NODE_ENV === 'development') {
@@ -127,21 +180,21 @@ export class MapView {
         this._canvas.removeEventListener('click', this._inputListener);
     };
 
-    get canvas() {
-        return this._canvas;
-    }
-
     private _initMapData() {
-        this._cellsByHorizontal = Math.floor(this._canvasWidth / MapView.CELL_WIDTH);
+        this._cellsByHorizontal = Math.floor(this._canvasWidth / this._cellWidth);
         if (this._cellsByHorizontal > this._lifeMap.width) {
             throw new MapViewError('Map width is too low');
         }
 
-        this._cellsByVertical = Math.floor(this._canvasHeight / MapView.CELL_HEIGHT);
+        this._cellsByVertical = Math.floor(this._canvasHeight / this._cellHeight);
         if (this._cellsByVertical > this._lifeMap.height) {
             throw new MapViewError('Map height is too low');
         }
 
+        this._setCenterOffsets();
+    }
+
+    private _setCenterOffsets() {
         this._cellsHorizontalOffset = (this._lifeMap.width - BigInt(this._cellsByHorizontal)) / 2n;
         this._cellsVerticalOffset = (this._lifeMap.height - BigInt(this._cellsByVertical)) / 2n;
     }
@@ -155,8 +208,8 @@ export class MapView {
     };
 
     private _getCellByClientCoordinates(clientX: number, clientY: number) {
-        const curVerticalOffset = BigInt(Math.trunc((clientY - this._canvasRect.top) / MapView.CELL_HEIGHT));
-        const curHorizontalOffset = BigInt(Math.trunc((clientX - this._canvasRect.left) / MapView.CELL_WIDTH));
+        const curVerticalOffset = BigInt(Math.trunc((clientY - this._canvasRect.top) / this._cellHeight));
+        const curHorizontalOffset = BigInt(Math.trunc((clientX - this._canvasRect.left) / this._cellWidth));
         return {
             top: this._cellsVerticalOffset + curVerticalOffset,
             left: this._cellsHorizontalOffset + curHorizontalOffset,
@@ -170,20 +223,21 @@ export class MapView {
 
     private _setCellState(i: bigint, j: bigint, isAlive: boolean) {
         this._lifeMap.isAlive(i, j, isAlive);
-        const x = Number(j - this._cellsHorizontalOffset) * MapView.CELL_WIDTH;
-        const y = Number(i - this._cellsVerticalOffset) * MapView.CELL_HEIGHT;
+        const x = Number(j - this._cellsHorizontalOffset) * this._cellWidth;
+        const y = Number(i - this._cellsVerticalOffset) * this._cellHeight;
         if (isAlive) {
-            this._ctx.fillRect(x, y, MapView.CELL_WIDTH, MapView.CELL_HEIGHT);
+            this._ctx.fillRect(x, y, this._cellWidth, this._cellHeight);
         } else {
-            this._ctx.clearRect(x, y, MapView.CELL_WIDTH, MapView.CELL_HEIGHT);
-            this._ctx.strokeRect(x, y, MapView.CELL_WIDTH, MapView.CELL_HEIGHT);
+            this._ctx.clearRect(x, y, this._cellWidth, this._cellHeight);
+            this._ctx.strokeRect(x, y, this._cellWidth, this._cellHeight);
         }
     }
 }
 
-class MapViewScrollHandler {
+class MapViewNavigationHandler {
     public static readonly SCROLL_TIMEOUT = 32;
     public static readonly KEY_TIMEOUT = 16;
+    public static readonly ZOOM_TIMEOUT = 75;
 
     public static readonly KEY_ACTIONS: ObjMap = {
         KeyW: 'up',
@@ -199,18 +253,30 @@ class MapViewScrollHandler {
         __proto__: null,
     };
 
+    private _pointerLocked = false;
+
     private readonly _mapView: MapView;
+
     private readonly _onScrollThrottled: (e: WheelEvent) => void;
+    private readonly _onZoomThrottled: (arg: WheelEvent) => void;
     private readonly _onKeyThrottled: (arg: KeyboardEvent) => void;
 
     constructor(mapView: MapView) {
         this._mapView = mapView;
 
-        this._onScrollThrottled = throttle(this._onScroll, MapViewScrollHandler.SCROLL_TIMEOUT);
-        this._onKeyThrottled = throttle(this._onKey, MapViewScrollHandler.KEY_TIMEOUT);
+        this._onScrollThrottled = throttle(this._onScroll, MapViewNavigationHandler.SCROLL_TIMEOUT);
+        this._onZoomThrottled = throttle(this._onZoom, MapViewNavigationHandler.ZOOM_TIMEOUT);
+        this._onKeyThrottled = throttle(this._onKey, MapViewNavigationHandler.KEY_TIMEOUT);
 
-        this._mapView.canvas.addEventListener('mousewheel', this._onScrollThrottled as EventListener);
+        const canvas = this._mapView.canvas;
+        canvas.addEventListener('mousewheel', this._onScrollThrottled as EventListener);
+        canvas.addEventListener('mousewheel', this._onZoomThrottled as EventListener);
+        canvas.addEventListener('mouseenter', this._lockPointer);
+        canvas.addEventListener('mouseleave', this._unlockPointer);
+        canvas.addEventListener('mousewheel', this._defaultPreventer);
+
         window.addEventListener('keydown', this._onKeyThrottled as EventListener);
+        window.addEventListener('keydown', this._defaultPreventer);
     }
 
     private _onScroll = (events: WheelEvent[]) => {
@@ -218,36 +284,123 @@ class MapViewScrollHandler {
         let deltaY = 0;
 
         for (const event of events) {
+            if (event.metaKey || event.ctrlKey) {
+                continue;
+            }
             deltaX += event.deltaX;
             deltaY += event.deltaY;
         }
 
-        const finalX = BigInt(Math.trunc(deltaX / MapView.CELL_WIDTH));
-        const finalY = BigInt(Math.trunc(deltaY / MapView.CELL_HEIGHT));
-        this._mapView.moveBy(finalX, finalY);
+        if (!deltaX && !deltaY) {
+            return;
+        }
+
+        const finalX = BigInt(Math.trunc(deltaX / this._mapView.cellWidth));
+        const finalY = BigInt(Math.trunc(deltaY / this._mapView.cellHeight));
+
+        if (finalX || finalY) {
+            this._mapView.moveBy(finalX, finalY);
+        }
     };
 
     private _onKey = (events: KeyboardEvent[]) => {
-        let deltaX = 0n;
-        let deltaY = 0n;
+        if (!this._pointerLocked) {
+            return;
+        }
+
+        let deltaX = 0;
+        let deltaY = 0;
+        let wasMod = false;
 
         for (const e of events) {
-            switch (MapViewScrollHandler.KEY_ACTIONS[e.code]) {
+            const action = MapViewNavigationHandler.KEY_ACTIONS[e.code];
+            switch (action) {
             case 'up':
-                deltaY += 1n;
+                deltaY += 1;
                 break;
             case 'left':
-                deltaX += 1n;
+                deltaX += 1;
                 break;
             case 'down':
-                deltaY -= 1n;
+                deltaY -= 1;
                 break;
             case 'right':
-                deltaX -= 1n;
+                deltaX -= 1;
                 break;
+            }
+
+            if (action && (e.metaKey || e.ctrlKey)) {
+                wasMod = true;
             }
         }
 
-        this._mapView.moveBy(deltaX, deltaY);
+        if (wasMod && (deltaX || deltaY)) {
+            let finalDelta = deltaX;
+            if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                finalDelta = deltaY;
+            }
+            finalDelta = Math.round(finalDelta);
+            this._mapView.resizeCellsBy(-finalDelta);
+            return;
+        }
+
+        if (deltaX || deltaY) {
+            this._mapView.moveBy(BigInt(deltaX), BigInt(deltaY));
+        }
+    };
+
+    private _onZoom = (events: WheelEvent[]) => {
+        let deltaX = 0;
+        let deltaY = 0;
+
+        for (const event of events) {
+            if (!event.metaKey && !event.ctrlKey) {
+                continue;
+            }
+            deltaX -= event.deltaX;
+            deltaY -= event.deltaY;
+        }
+
+        if (!deltaX && !deltaY) {
+            return;
+        }
+
+        let finalDelta = deltaX;
+        if (Math.abs(deltaY) > Math.abs(deltaX)) {
+            finalDelta = deltaY;
+        }
+        finalDelta = Math.round(finalDelta / 10);
+
+        this._mapView.resizeCellsBy(finalDelta);
+    };
+
+    private _lockPointer = () => {
+        this._pointerLocked = true;
+    };
+
+    private _unlockPointer = () => {
+        this._pointerLocked = false;
+    };
+
+    private _defaultPreventer = (e: Event) => {
+        if (!this._pointerLocked) {
+            return;
+        }
+
+        const isKey = e instanceof KeyboardEvent;
+        const isMouse = e instanceof MouseEvent;
+
+        if ((isKey || isMouse) && (e.shiftKey || e.altKey)) {
+            return;
+        }
+
+        if (
+            isKey && (e.ctrlKey || e.metaKey) &&
+            (e.code === 'Digit0' || e.code === 'Minus' || e.code === 'Equal')
+        ) {
+            return;
+        }
+
+        e.preventDefault();
     };
 }

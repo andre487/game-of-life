@@ -26,11 +26,16 @@ export class ControlsView {
     private _game: GameOfLife;
     private _startButton: HTMLButtonElement;
     private _stopButton: HTMLButtonElement;
+    private _centerButton: HTMLButtonElement;
+    private _noZoomButton: HTMLButtonElement;
     private _saveButton: HTMLButtonElement;
     private _loadButton: HTMLButtonElement;
     private _saveGameController: SaveGameController;
     private _messagesView: MessagesView;
     private _resetButton: HTMLButtonElement;
+    private _helpShowButton: HTMLButtonElement;
+    private _helpCloseButton: HTMLButtonElement;
+    private _helpBlock: HTMLElement;
 
     constructor(params: ControlsViewParams) {
         this._lifeMap = params.lifeMap;
@@ -41,9 +46,15 @@ export class ControlsView {
 
         this._startButton = document.getElementById('start') as MaybeButton ?? thr('Button not found');
         this._stopButton = document.getElementById('stop') as MaybeButton ?? thr('Button not found');
+        this._centerButton = document.getElementById('center') as MaybeButton ?? thr('Button not found');
+        this._noZoomButton = document.getElementById('no-zoom') as MaybeButton ?? thr('Button not found');
         this._saveButton = document.getElementById('save') as MaybeButton ?? thr('Button not found');
         this._loadButton = document.getElementById('load') as MaybeButton ?? thr('Button not found');
         this._resetButton = document.getElementById('reset') as MaybeButton ?? thr('Button not found');
+
+        this._helpShowButton = document.getElementById('help-button') as MaybeButton ?? thr('Button not found');
+        this._helpCloseButton = document.getElementById('help__close') as MaybeButton ?? thr('Button not found');
+        this._helpBlock = document.getElementById('help') as U.Nullable<HTMLElement> ?? thr('Help not found');
     }
 
     init() {
@@ -74,6 +85,14 @@ export class ControlsView {
             this._game.stop();
         };
 
+        this._centerButton.onclick = () => {
+            this._mapView.moveToCenter();
+        };
+
+        this._noZoomButton.onclick = () => {
+            this._mapView.resetCellsSize();
+        };
+
         this._saveButton.onclick = () => {
             this._saveGameController.save();
         };
@@ -90,6 +109,14 @@ export class ControlsView {
         this._resetButton.onclick = () => {
             this._lifeMap.reset();
             this._mapView.renderWhenFrame();
+        };
+
+        this._helpShowButton.onclick = () => {
+            this._helpBlock.classList.remove('help_hidden');
+        };
+
+        this._helpCloseButton.onclick = () => {
+            this._helpBlock.classList.add('help_hidden');
         };
     }
 }
