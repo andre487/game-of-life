@@ -1,4 +1,4 @@
-import type {BigIntSrc, ErrorClass, GeneralFn, SimpleFn} from './common-types';
+import {BigIntSrc, ErrorClass, ExtendableHollowObj, GeneralFn, SimpleFn} from './common-types';
 
 export class CustomError extends Error {
     constructor(message?: string) {
@@ -8,8 +8,8 @@ export class CustomError extends Error {
     }
 }
 
-export function obj(): unknown {
-    return Object.create(null);
+export function obj<T extends ExtendableHollowObj>(): T {
+    return Object.create(null) as T;
 }
 
 export function call(func: SimpleFn) {
@@ -60,30 +60,29 @@ export function enterValueToInterval(val: BigIntSrc, max: BigIntSrc): bigint {
     return res;
 }
 
-type ThrottledFunction<T extends unknown[]> = (argsArr: T) => void;
-type ThrottledArgType<T> = T extends (infer U)[] ? U : never;
+type ThrottledFunction<T extends unknown[]> = GeneralFn<[T], void>;
+type ThrottledArgType<T> = T extends (infer G)[] ? G : never;
+type ThrottleResultFunction<T> = GeneralFn<[ThrottledArgType<T>], void>;
 
-export function throttle<T extends unknown[]>(func: ThrottledFunction<T>, time: number) {
-    let lastCall = 0;
-    let argContainer: T = [] as unknown as T; // 😿
+export function throttle<T extends unknown[]>(func: ThrottledFunction<T>, time: number): ThrottleResultFunction<T> {
+    let args: T = [] as unknown as T; // 😿
+    let tm: unknown = null;
 
-    return function(arg: ThrottledArgType<T>): void {
-        const now = Date.now();
-        if (lastCall === 0) {
-            lastCall = now;
-        }
-
-        if (now - lastCall < time) {
-            argContainer.push(arg);
-            return;
-        }
-        lastCall = now;
-
+    function callFn() {
         try {
-            func(argContainer);
+            func(args);
         } catch (e) {
             window.reportError(e);
         }
-        argContainer = [] as unknown as T;
+
+        args = [] as unknown as T;
+        tm = null;
+    }
+
+    return function throttled(arg: ThrottledArgType<T>): void {
+        args.push(arg);
+        if (!tm) {
+            tm = setTimeout(callFn, time);
+        }
     };
 }
