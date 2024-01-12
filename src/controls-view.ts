@@ -26,6 +26,7 @@ export class ControlsView {
     private _game: GameOfLife;
     private _startButton: HTMLButtonElement;
     private _stopButton: HTMLButtonElement;
+    private _centerButton: HTMLButtonElement;
     private _saveButton: HTMLButtonElement;
     private _loadButton: HTMLButtonElement;
     private _saveGameController: SaveGameController;
@@ -41,6 +42,7 @@ export class ControlsView {
 
         this._startButton = document.getElementById('start') as MaybeButton ?? thr('Button not found');
         this._stopButton = document.getElementById('stop') as MaybeButton ?? thr('Button not found');
+        this._centerButton = document.getElementById('center') as MaybeButton ?? thr('Button not found');
         this._saveButton = document.getElementById('save') as MaybeButton ?? thr('Button not found');
         this._loadButton = document.getElementById('load') as MaybeButton ?? thr('Button not found');
         this._resetButton = document.getElementById('reset') as MaybeButton ?? thr('Button not found');
@@ -72,6 +74,10 @@ export class ControlsView {
 
         this._stopButton.onclick = () => {
             this._game.stop();
+        };
+
+        this._centerButton.onclick = () => {
+            this._mapView.moveToCenter();
         };
 
         this._saveButton.onclick = () => {

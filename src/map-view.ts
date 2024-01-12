@@ -97,6 +97,11 @@ export class MapView {
         this.renderWhenFrame();
     };
 
+    moveToCenter = () => {
+        this._setCenterOffsets();
+        this.renderWhenFrame();
+    };
+
     renderWhenFrame = () => {
         if (this._curFrameRequest) {
             if (process.env.NODE_ENV === 'development') {
@@ -142,6 +147,10 @@ export class MapView {
             throw new MapViewError('Map height is too low');
         }
 
+        this._setCenterOffsets();
+    }
+
+    private _setCenterOffsets() {
         this._cellsHorizontalOffset = (this._lifeMap.width - BigInt(this._cellsByHorizontal)) / 2n;
         this._cellsVerticalOffset = (this._lifeMap.height - BigInt(this._cellsByVertical)) / 2n;
     }
