@@ -1,6 +1,6 @@
 import {BigIntSrc, ErrorClass, ExtendableHollowObj, GeneralFn, SimpleFn} from './common-types';
 
-export const hollowObjInst = Object.freeze(obj<never>());
+export const emptyHollowObj = obj<never>();
 
 export class CustomError extends Error {
     constructor(message?: string) {

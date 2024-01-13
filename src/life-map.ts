@@ -1,6 +1,6 @@
 import {O} from 'ts-toolbelt';
 import type {BigIntSrc, ExtendableHollowObj, SimpleFn, Stringable} from './common-types';
-import {call, compareBigInts, CustomError, enterValueToInterval, hollowObjInst, obj} from './utils';
+import {call, compareBigInts, CustomError, enterValueToInterval, emptyHollowObj, obj} from './utils';
 
 export interface PopulatedRect {
     top: bigint;
@@ -12,13 +12,24 @@ export interface PopulatedRect {
 export type CoordVector = ExtendableHollowObj<boolean>;
 export type CoordMatrix = ExtendableHollowObj<CoordVector>;
 
+export type LifePoint = [bigint, bigint];
+export type LifeCluster = LifePoint[];
 type ClVect = [string, bigint][];
 
 export class LifeMapError extends CustomError {}
 
+function compareLifePoints(a: LifePoint, b: LifePoint): number {
+    const d = compareBigInts(a[0], b[0]);
+    if (d) {
+        return d;
+    }
+    return compareBigInts(a[1], b[1]);
+}
+
 export class LifeMap {
     public static readonly POPULATED_DELTA = 30n;
-    public static readonly CLUSTER_TOLERANCE = 10;
+    public static readonly CLUSTER_LOCALITY = 5;
+    public static readonly CLUSTER_TOLERANCE = LifeMap.CLUSTER_LOCALITY * 2 + 1;
 
     private _container: CoordMatrix = obj();
     private _width = 0n;
@@ -77,43 +88,42 @@ export class LifeMap {
             return [];
         }
 
-        const clusters: bigint[][][] = [];
+        const clusters: LifeCluster[] = [];
         const xCount = xVector.length;
         for (let i = 0; i < xCount;) {
-            const curXVal = xVector[i][1];
-            const curXSiblings: ClVect = [xVector[i]];
+            const curXData = xVector[i];
+            const curXVal = curXData[1];
+            const curXSiblings: ClVect = [curXData];
 
             let otherIdx = i + 1;
             let prevXVal = curXVal;
             while (otherIdx < xCount) {
-                const otherXVal = xVector[otherIdx][1];
+                const otherXData = xVector[otherIdx++];
+                const otherXVal = otherXData[1];
                 if (otherXVal - prevXVal > LifeMap.CLUSTER_TOLERANCE) {
                     break;
                 }
                 prevXVal = otherXVal;
-                curXSiblings.push(xVector[otherIdx]);
-                ++otherIdx;
+                curXSiblings.push(otherXData);
             }
 
-            const curMatrix = curXSiblings.flatMap(([xKey, xVal]) => {
-                return Object.keys(this._container[xKey] ?? hollowObjInst).map((y) => [xVal, BigInt(y)]);
-            }).sort((a, b) => compareBigInts(a[1], b[1]));
+            const curYMatrix = curXSiblings
+                .flatMap(([xKey, xVal]) => {
+                    return Object
+                        .keys(this._container[xKey] ?? emptyHollowObj)
+                        .map((y): LifePoint => [xVal, BigInt(y)]);
+                })
+                .sort((a, b) => compareBigInts(a[1], b[1]));
 
-            let curCluster: bigint[][] = [curMatrix[0]];
+            let curCluster: LifeCluster = [curYMatrix[0]];
             clusters.push(curCluster);
 
-            let prevYVal = curMatrix[0][1];
-            for (let j = 1; j < curMatrix.length; ++j) {
-                const curPoint = curMatrix[j];
+            let prevYVal = curYMatrix[0][1];
+            for (let j = 1; j < curYMatrix.length; ++j) {
+                const curPoint = curYMatrix[j];
                 const curYVal = curPoint[1];
                 if (curYVal - prevYVal > LifeMap.CLUSTER_TOLERANCE) {
-                    curCluster.sort((a, b) => {
-                        const d = compareBigInts(a[0], b[0]);
-                        if (d) {
-                            return d;
-                        }
-                        return compareBigInts(a[1], b[1]);
-                    });
+                    curCluster.sort(compareLifePoints);
                     curCluster = [];
                     clusters.push(curCluster);
                 }
@@ -121,14 +131,8 @@ export class LifeMap {
                 curCluster.push(curPoint);
             }
 
-            if (curCluster.length) {
-                curCluster.sort((a, b) => {
-                    const d = compareBigInts(a[0], b[0]);
-                    if (d) {
-                        return d;
-                    }
-                    return compareBigInts(a[1], b[1]);
-                });
+            if (curCluster.length > 1) {
+                curCluster.sort(compareLifePoints);
             }
 
             i += curXSiblings.length;
@@ -158,7 +162,8 @@ export class LifeMap {
 
         const coords: string[] = [];
         for (const [keyX, vector] of Object.entries(this._container)) {
-            coords.push(`${keyX}:${Object.keys(vector ?? hollowObjInst).join(',')}`);
+            coords.push(`${keyX}:${Object.keys(vector ?? emptyHollowObj)
+                .join(',')}`);
         }
         data.push(coords.join('|'));
 
@@ -204,7 +209,7 @@ export class LifeMap {
             xVector[keyY] = true;
         } else if (!status && this._container[keyX]) {
             delete this._container[keyX]?.[keyY];
-            if (Object.keys(this._container[keyX] ?? hollowObjInst).length === 0) {
+            if (Object.keys(this._container[keyX] ?? emptyHollowObj).length === 0) {
                 delete this._container[keyX];
             }
         }
