@@ -1,5 +1,7 @@
 import {BigIntSrc, ErrorClass, ExtendableHollowObj, GeneralFn, SimpleFn} from './common-types';
 
+export const hollowObjInst = Object.freeze(obj<never>());
+
 export class CustomError extends Error {
     constructor(message?: string) {
         super(message);
@@ -8,8 +10,8 @@ export class CustomError extends Error {
     }
 }
 
-export function obj<T extends ExtendableHollowObj>(): T {
-    return Object.create(null) as T;
+export function obj<T>(): ExtendableHollowObj<T> {
+    return Object.create(null) as ExtendableHollowObj<T>;
 }
 
 export function call(func: SimpleFn) {
@@ -69,6 +71,27 @@ export function bigIntMinMax(val: bigint, min: bigint, max: bigint): bigint {
         res = max;
     }
     return res;
+}
+
+export function compareBigInts(a: BigIntSrc, b: BigIntSrc): number {
+    const d = BigInt(a) - BigInt(b);
+    if (d > 0n) {
+        return 1;
+    }
+    if (d < 0n) {
+        return -1;
+    }
+    return 0;
+}
+
+export function shuffleArray<T extends unknown[]>(arr: T): T {
+    let curIndex = arr.length;
+    while (curIndex > 0) {
+        const randIndex = Math.floor(Math.random() * curIndex);
+        --curIndex;
+        [arr[curIndex], arr[randIndex]] = [arr[randIndex], arr[curIndex]];
+    }
+    return arr;
 }
 
 type ThrottledFunction<T extends unknown[]> = GeneralFn<[T], void>;

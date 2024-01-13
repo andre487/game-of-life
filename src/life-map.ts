@@ -1,6 +1,6 @@
-import type {O} from 'ts-toolbelt';
-import type {BigIntSrc, HollowObj, SimpleFn, Stringable} from './common-types';
-import {call, CustomError, enterValueToInterval, obj} from './utils';
+import {O} from 'ts-toolbelt';
+import type {BigIntSrc, ExtendableHollowObj, SimpleFn, Stringable} from './common-types';
+import {call, compareBigInts, CustomError, enterValueToInterval, hollowObjInst, obj} from './utils';
 
 export interface PopulatedRect {
     top: bigint;
@@ -9,13 +9,16 @@ export interface PopulatedRect {
     left: bigint;
 }
 
-export type CoordVector = HollowObj & Record<string, boolean | undefined>;
-export type CoordMatrix = HollowObj & Record<string, CoordVector>;
+export type CoordVector = ExtendableHollowObj<boolean>;
+export type CoordMatrix = ExtendableHollowObj<CoordVector>;
+
+type ClVect = [string, bigint][];
 
 export class LifeMapError extends CustomError {}
 
 export class LifeMap {
     public static readonly POPULATED_DELTA = 30n;
+    public static readonly CLUSTER_TOLERANCE = 10;
 
     private _container: CoordMatrix = obj();
     private _width = 0n;
@@ -67,6 +70,73 @@ export class LifeMap {
         return Boolean(this._container[keyX]?.[keyY]);
     }
 
+    getLifeClusters() {
+        // About key iteration order: https://dev.to/frehner/the-order-of-js-object-keys-458d
+        const xVector: ClVect = Object.keys(this._container).map((x) => [x, BigInt(x)]);
+        if (!xVector.length) {
+            return [];
+        }
+
+        const clusters: bigint[][][] = [];
+        const xCount = xVector.length;
+        for (let i = 0; i < xCount;) {
+            const curXVal = xVector[i][1];
+            const curXSiblings: ClVect = [xVector[i]];
+
+            let otherIdx = i + 1;
+            let prevXVal = curXVal;
+            while (otherIdx < xCount) {
+                const otherXVal = xVector[otherIdx][1];
+                if (otherXVal - prevXVal > LifeMap.CLUSTER_TOLERANCE) {
+                    break;
+                }
+                prevXVal = otherXVal;
+                curXSiblings.push(xVector[otherIdx]);
+                ++otherIdx;
+            }
+
+            const curMatrix = curXSiblings.flatMap(([xKey, xVal]) => {
+                return Object.keys(this._container[xKey] ?? hollowObjInst).map((y) => [xVal, BigInt(y)]);
+            }).sort((a, b) => compareBigInts(a[1], b[1]));
+
+            let curCluster: bigint[][] = [curMatrix[0]];
+            clusters.push(curCluster);
+
+            let prevYVal = curMatrix[0][1];
+            for (let j = 1; j < curMatrix.length; ++j) {
+                const curPoint = curMatrix[j];
+                const curYVal = curPoint[1];
+                if (curYVal - prevYVal > LifeMap.CLUSTER_TOLERANCE) {
+                    curCluster.sort((a, b) => {
+                        const d = compareBigInts(a[0], b[0]);
+                        if (d) {
+                            return d;
+                        }
+                        return compareBigInts(a[1], b[1]);
+                    });
+                    curCluster = [];
+                    clusters.push(curCluster);
+                }
+                prevYVal = curYVal;
+                curCluster.push(curPoint);
+            }
+
+            if (curCluster.length) {
+                curCluster.sort((a, b) => {
+                    const d = compareBigInts(a[0], b[0]);
+                    if (d) {
+                        return d;
+                    }
+                    return compareBigInts(a[1], b[1]);
+                });
+            }
+
+            i += curXSiblings.length;
+        }
+
+        return clusters;
+    }
+
     addChangeListener(listener: SimpleFn) {
         if (this._changeListeners.indexOf(listener) === -1) {
             this._changeListeners.push(listener);
@@ -88,7 +158,7 @@ export class LifeMap {
 
         const coords: string[] = [];
         for (const [keyX, vector] of Object.entries(this._container)) {
-            coords.push(`${keyX}:${Object.keys(vector).join(',')}`);
+            coords.push(`${keyX}:${Object.keys(vector ?? hollowObjInst).join(',')}`);
         }
         data.push(coords.join('|'));
 
@@ -111,10 +181,10 @@ export class LifeMap {
         const container = this._container = obj();
         for (const coordData of data[6].split('|')) {
             const [keyX, yStr] = coordData.split(':');
-            container[keyX] = obj();
+            const xVector = container[keyX] = obj();
 
             for (const keyY of yStr.split(',')) {
-                container[keyX][keyY] = true;
+                xVector[keyY] = true;
             }
         }
 
@@ -130,11 +200,11 @@ export class LifeMap {
         const keyY = bigY.toString();
 
         if (status) {
-            this._container[keyX] ??= obj();
-            this._container[keyX][keyY] = true;
+            const xVector = this._container[keyX] ??= obj();
+            xVector[keyY] = true;
         } else if (!status && this._container[keyX]) {
-            delete this._container[keyX][keyY];
-            if (Object.keys(this._container[keyX]).length === 0) {
+            delete this._container[keyX]?.[keyY];
+            if (Object.keys(this._container[keyX] ?? hollowObjInst).length === 0) {
                 delete this._container[keyX];
             }
         }
