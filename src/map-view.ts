@@ -114,10 +114,10 @@ export class MapView {
 
         let i = this._cellsVerticalOffset;
         const M = i + BigInt(this._cellsByVertical);
-        for (; i < M; ++i) {
+        for (; i <= M; ++i) {
             let j = this._cellsHorizontalOffset;
             const N = j + BigInt(this._cellsByHorizontal);
-            for (; j < N; ++j) {
+            for (; j <= N; ++j) {
                 this._setCellState(i, j, this._lifeMap.isAlive(i, j));
             }
         }
