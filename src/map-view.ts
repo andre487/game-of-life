@@ -62,7 +62,7 @@ export class MapView {
         this._initMapData();
         this._lifeMap.addChangeListener(() => {
             this._initMapData();
-            this.render();
+            this.renderWhenFrame();
         });
 
         new MapViewNavigationHandler(this);
@@ -145,7 +145,14 @@ export class MapView {
         }
 
         if (changed) {
+            const oldCenterX = this._cellsHorizontalOffset + BigInt(this._cellsByHorizontal) / 2n;
+            const oldCenterY = this._cellsVerticalOffset + BigInt(this._cellsByVertical) / 2n;
+
             this._initMapData();
+
+            this._cellsHorizontalOffset = oldCenterX - BigInt(this._cellsByHorizontal) / 2n;
+            this._cellsVerticalOffset = oldCenterY - BigInt(this._cellsByVertical) / 2n;
+
             this.renderWhenFrame();
         }
     }
