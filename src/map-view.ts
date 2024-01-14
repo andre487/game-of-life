@@ -1,7 +1,7 @@
 import type {U} from 'ts-toolbelt';
-import {ObjMap} from './common-types';
+import type {ObjMap} from './common-types';
 import {LifeMap} from './life-map';
-import * as styles from './styles';
+import styles from './styles';
 import {bigIntMinMax, createErrorThrower, CustomError, numberFormatter, throttle} from './utils';
 
 export class MapViewError extends CustomError {}
@@ -15,10 +15,10 @@ export enum MapViewState {
 }
 
 export class MapView {
-    public static readonly DEFAULT_CELL_WIDTH = 10;
-    public static readonly DEFAULT_CELL_HEIGHT = 10;
-    public static readonly MIN_CELL_SIZE = 3;
-    public static readonly MAX_CELL_SIZE = 20;
+    public static readonly DEFAULT_CELL_WIDTH = 12;
+    public static readonly DEFAULT_CELL_HEIGHT = 12;
+    public static readonly MIN_CELL_SIZE = 5;
+    public static readonly MAX_CELL_SIZE = 22;
 
     private _state: MapViewState = MapViewState.Initial;
 
@@ -51,8 +51,8 @@ export class MapView {
         this._canvasHeight = this._canvas.clientHeight;
 
         this._ctx = this._canvas.getContext('2d') ?? thr('Failed to create context');
-        this._ctx.fillStyle = styles.defaultColor;
-        this._ctx.strokeStyle = styles.darkBackgroundColor;
+        this._ctx.fillStyle = styles.gridFill;
+        this._ctx.strokeStyle = styles.gridStroke;
 
         this._xValue = document.getElementById('map-params__item-x') ?? thr('No X value');
         this._yValue = document.getElementById('map-params__item-y') ?? thr('No Y value');
@@ -62,7 +62,7 @@ export class MapView {
         this._initMapData();
         this._lifeMap.addChangeListener(() => {
             this._initMapData();
-            this.render();
+            this.renderWhenFrame();
         });
 
         new MapViewNavigationHandler(this);
@@ -80,15 +80,44 @@ export class MapView {
         return this._cellHeight;
     }
 
+    getSaveString() {
+        const data = this._lifeMap.getSaveData();
+        data.push(this._cellWidth, this._cellHeight, this._cellsHorizontalOffset, this._cellsVerticalOffset);
+        return LifeMap.stringifySaveData(data);
+    }
+
+    loadSaveFromString(dump: string) {
+        const data = LifeMap.parseSaveString(dump);
+        this._lifeMap.loadSaveData(data);
+        if (data.length < 11) {
+            this._initMapData();
+            return this.renderWhenFrame();
+        }
+
+        this._cellWidth = parseInt(data[7]) || MapView.DEFAULT_CELL_WIDTH;
+        this._cellHeight = parseInt(data[8]) || MapView.DEFAULT_CELL_HEIGHT;
+        this._initMapData(false);
+
+        try {
+            this._cellsHorizontalOffset = BigInt(data[9]);
+            this._cellsVerticalOffset = BigInt(data[10]);
+        } catch (e) {
+            window.reportError(e);
+            this._setCenterOffsets();
+        }
+
+        this.renderWhenFrame();
+    }
+
     render = () => {
         this._ctx.clearRect(0, 0, this._canvasWidth, this._canvasHeight);
 
         let i = this._cellsVerticalOffset;
         const M = i + BigInt(this._cellsByVertical);
-        for (; i < M; ++i) {
+        for (; i <= M; ++i) {
             let j = this._cellsHorizontalOffset;
             const N = j + BigInt(this._cellsByHorizontal);
-            for (; j < N; ++j) {
+            for (; j <= N; ++j) {
                 this._setCellState(i, j, this._lifeMap.isAlive(i, j));
             }
         }
@@ -145,7 +174,14 @@ export class MapView {
         }
 
         if (changed) {
+            const oldCenterX = this._cellsHorizontalOffset + BigInt(this._cellsByHorizontal) / 2n;
+            const oldCenterY = this._cellsVerticalOffset + BigInt(this._cellsByVertical) / 2n;
+
             this._initMapData();
+
+            this._cellsHorizontalOffset = oldCenterX - BigInt(this._cellsByHorizontal) / 2n;
+            this._cellsVerticalOffset = oldCenterY - BigInt(this._cellsByVertical) / 2n;
+
             this.renderWhenFrame();
         }
     }
@@ -180,7 +216,7 @@ export class MapView {
         this._canvas.removeEventListener('click', this._inputListener);
     };
 
-    private _initMapData() {
+    private _initMapData(setCentralOffset = true) {
         this._cellsByHorizontal = Math.floor(this._canvasWidth / this._cellWidth);
         if (this._cellsByHorizontal > this._lifeMap.width) {
             throw new MapViewError('Map width is too low');
@@ -191,7 +227,9 @@ export class MapView {
             throw new MapViewError('Map height is too low');
         }
 
-        this._setCenterOffsets();
+        if (setCentralOffset) {
+            this._setCenterOffsets();
+        }
     }
 
     private _setCenterOffsets() {
@@ -225,11 +263,17 @@ export class MapView {
         this._lifeMap.isAlive(i, j, isAlive);
         const x = Number(j - this._cellsHorizontalOffset) * this._cellWidth;
         const y = Number(i - this._cellsVerticalOffset) * this._cellHeight;
+
+        const ctx = this._ctx;
         if (isAlive) {
-            this._ctx.fillRect(x, y, this._cellWidth, this._cellHeight);
+            ctx.fillRect(x, y, this._cellWidth, this._cellHeight);
+            const baseStrokeStyle = ctx.strokeStyle;
+            ctx.strokeStyle = styles.gridBorderColor;
+            ctx.strokeRect(x, y, this._cellWidth, this._cellHeight);
+            ctx.strokeStyle = baseStrokeStyle;
         } else {
-            this._ctx.clearRect(x, y, this._cellWidth, this._cellHeight);
-            this._ctx.strokeRect(x, y, this._cellWidth, this._cellHeight);
+            ctx.clearRect(x, y, this._cellWidth, this._cellHeight);
+            ctx.strokeRect(x, y, this._cellWidth, this._cellHeight);
         }
     }
 }
