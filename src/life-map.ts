@@ -13,9 +13,7 @@ export type CoordVector = ExtendableHollowObj<boolean>;
 export type CoordMatrix = ExtendableHollowObj<CoordVector>;
 
 export type LifePoint = [bigint, bigint];
-export type LifeCluster = LifePoint[];
 export type LifeLocality = [string, string, bigint, bigint];
-type ClVect = [string, bigint][];
 
 export class LifeMapError extends CustomError {}
 
@@ -29,8 +27,6 @@ export function compareLifePoints(x1: bigint, x2: bigint, y1: bigint, y2: bigint
 
 export class LifeMap {
     public static readonly POPULATED_DELTA = 30n;
-    public static readonly CLUSTER_LOCALITY = 5;
-    public static readonly CLUSTER_TOLERANCE = LifeMap.CLUSTER_LOCALITY * 2 + 1;
 
     private _container: CoordMatrix = obj();
     private _width = 0n;
@@ -118,71 +114,6 @@ export class LifeMap {
             }
         }
         return res.sort((a, b) => compareLifePoints(a[2], b[2], a[3], b[3]));
-    }
-
-
-    getLifeClusters() {
-        /* eslint-disable guard-for-in */
-        // About key iteration order: https://dev.to/frehner/the-order-of-js-object-keys-458d
-        const xVector: ClVect = [];
-        for (const xKey in this._container) {
-            xVector.push([xKey, BigInt(xKey)]);
-        }
-
-        if (!xVector.length) {
-            return [];
-        }
-
-        const clusters: LifeCluster[] = [];
-        const xCount = xVector.length;
-        for (let i = 0; i < xCount;) {
-            const curXData = xVector[i];
-            const curXVal = curXData[1];
-            const curXSiblings: ClVect = [curXData];
-
-            let prevXVal = curXVal;
-            for (let j = i + 1; j < xCount; ++j) {
-                const otherXData = xVector[j];
-                const otherXVal = otherXData[1];
-                if (otherXVal - prevXVal > LifeMap.CLUSTER_TOLERANCE) {
-                    break;
-                }
-                prevXVal = otherXVal;
-                curXSiblings.push(otherXData);
-            }
-
-            const curYMatrix: LifePoint[] = [];
-            for (const [xKey, xVal] of curXSiblings) {
-                for (const yKey in this._container[xKey]) {
-                    curYMatrix.push([xVal, BigInt(yKey)]);
-                }
-            }
-            curYMatrix.sort((a, b) => compareBigInts(a[1], b[1]));
-
-            let curCluster: LifeCluster = [curYMatrix[0]];
-            clusters.push(curCluster);
-
-            let prevYVal = curYMatrix[0][1];
-            for (let j = 1; j < curYMatrix.length; ++j) {
-                const curPoint = curYMatrix[j];
-                const curYVal = curPoint[1];
-                if (curYVal - prevYVal > LifeMap.CLUSTER_TOLERANCE) {
-                    curCluster.sort((a, b) => compareLifePoints(a[0], b[0], a[1], b[1]));
-                    curCluster = [];
-                    clusters.push(curCluster);
-                }
-                prevYVal = curYVal;
-                curCluster.push(curPoint);
-            }
-
-            if (curCluster.length > 1) {
-                curCluster.sort((a, b) => compareLifePoints(a[0], b[0], a[1], b[1]));
-            }
-
-            i += curXSiblings.length;
-        }
-
-        return clusters;
     }
 
     addChangeListener(listener: SimpleFn) {

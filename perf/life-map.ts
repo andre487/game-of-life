@@ -15,9 +15,9 @@ bench('LifeMap', function() {
         .add('getLifeLocalities()', () => {
             lifeMap.getLifeLocalities();
         })
-        .add('getLifeClusters()', () => {
-            lifeMap.getLifeClusters();
-        })
+        // .add('getLifeClusters()', () => {
+        //     lifeMap.getLifeClusters();
+        // })
         .on('start', prepare)
         .on('cycle', prepare);
 });
