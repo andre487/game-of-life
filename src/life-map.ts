@@ -178,8 +178,11 @@ export class LifeMap {
         const container = this._container = obj();
         for (const coordData of data[6].split('|')) {
             const [keyX, yStr] = coordData.split(':');
-            const xVector = container[keyX] = obj();
+            if (!keyX || !yStr) {
+                continue;
+            }
 
+            const xVector = container[keyX] = obj();
             for (const keyY of yStr.split(',')) {
                 xVector[keyY] = true;
             }
