@@ -4,7 +4,7 @@ export interface HollowObj {
     readonly __proto__: null;
 }
 
-export type ExtendableHollowObj = HollowObj & Record<string, U.Nullable<unknown>>;
+export type ExtendableHollowObj<T> = HollowObj & Record<string, U.Nullable<T>>;
 
 export type ObjMap = HollowObj & Record<string, U.Nullable<string>>;
 
