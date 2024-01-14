@@ -1,5 +1,5 @@
 import type {U} from 'ts-toolbelt';
-import {ObjMap} from './common-types';
+import type {ObjMap} from './common-types';
 import {LifeMap} from './life-map';
 import * as styles from './styles';
 import {bigIntMinMax, createErrorThrower, CustomError, numberFormatter, throttle} from './utils';
@@ -78,6 +78,35 @@ export class MapView {
 
     get cellHeight() {
         return this._cellHeight;
+    }
+
+    getSaveString() {
+        const data = this._lifeMap.getSaveData();
+        data.push(this._cellWidth, this._cellHeight, this._cellsHorizontalOffset, this._cellsVerticalOffset);
+        return LifeMap.stringifySaveData(data);
+    }
+
+    loadSaveFromString(dump: string) {
+        const data = LifeMap.parseSaveString(dump);
+        this._lifeMap.loadSaveData(data);
+        if (data.length < 11) {
+            this._initMapData();
+            return this.renderWhenFrame();
+        }
+
+        this._cellWidth = parseInt(data[7]) || MapView.DEFAULT_CELL_WIDTH;
+        this._cellHeight = parseInt(data[8]) || MapView.DEFAULT_CELL_HEIGHT;
+        this._initMapData(false);
+
+        try {
+            this._cellsHorizontalOffset = BigInt(data[9]);
+            this._cellsVerticalOffset = BigInt(data[10]);
+        } catch (e) {
+            window.reportError(e);
+            this._setCenterOffsets();
+        }
+
+        this.renderWhenFrame();
     }
 
     render = () => {
@@ -187,7 +216,7 @@ export class MapView {
         this._canvas.removeEventListener('click', this._inputListener);
     };
 
-    private _initMapData() {
+    private _initMapData(setCentralOffset = true) {
         this._cellsByHorizontal = Math.floor(this._canvasWidth / this._cellWidth);
         if (this._cellsByHorizontal > this._lifeMap.width) {
             throw new MapViewError('Map width is too low');
@@ -198,7 +227,9 @@ export class MapView {
             throw new MapViewError('Map height is too low');
         }
 
-        this._setCenterOffsets();
+        if (setCentralOffset) {
+            this._setCenterOffsets();
+        }
     }
 
     private _setCenterOffsets() {

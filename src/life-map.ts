@@ -1,4 +1,4 @@
-import {O} from 'ts-toolbelt';
+import type {O} from 'ts-toolbelt';
 import type {BigIntSrc, ExtendableHollowObj, SimpleFn, Stringable} from './common-types';
 import {call, compareBigInts, CustomError, emptyHollowObj, obj} from './utils';
 
@@ -41,6 +41,14 @@ export class LifeMap {
         this._width = BigInt(mapWidth);
         this._height = BigInt(mapHeight);
         this.reset();
+    }
+
+    static stringifySaveData(data: Stringable[]): string {
+        return data.join(';');
+    }
+
+    static parseSaveString(dump: string): string[] {
+        return dump.split(';');
     }
 
     get width(): bigint {
@@ -136,7 +144,7 @@ export class LifeMap {
         this._changeListeners.forEach(call);
     }
 
-    serialize(): string {
+    getSaveData() {
         const data: Stringable[] = [this._width, this._height, this._minX, this._maxX, this._minY, this._maxY];
 
         const coords: string[] = [];
@@ -145,11 +153,10 @@ export class LifeMap {
         }
         data.push(coords.join('|'));
 
-        return data.join(';');
+        return data;
     }
 
-    loadSerializedState(dump: string) {
-        const data = dump.split(';');
+    loadSaveData(data: string[]) {
         if (data.length < 7) {
             throw new LifeMapError('Invalid save data length');
         }
@@ -170,8 +177,6 @@ export class LifeMap {
                 xVector[keyY] = true;
             }
         }
-
-        this._changeListeners.forEach(call);
     }
 
     private _setStatusToContainer(bigX: bigint, bigY: bigint, status: boolean) {

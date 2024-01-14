@@ -1,24 +1,24 @@
 import type {U} from 'ts-toolbelt';
-import {LifeMap} from './life-map';
+import {MapView} from './map-view';
 
 export class SaveGameController {
     public static readonly BUTTON_SAVE_NAME = 'save';
     public static readonly AUTO_SAVE_NAME = 'auto_save';
 
-    private _lifeMap: LifeMap;
+    private _mapView: MapView;
 
-    constructor(lifeMap: LifeMap) {
-        this._lifeMap = lifeMap;
+    constructor(mapView: MapView) {
+        this._mapView = mapView;
     }
 
     save(saveName = SaveGameController.BUTTON_SAVE_NAME) {
-        window.localStorage[saveName] = this._lifeMap.serialize();
+        window.localStorage[saveName] = this._mapView.getSaveString();
     }
 
     load(saveName = SaveGameController.BUTTON_SAVE_NAME) {
         if (this.doesSaveExist(saveName)) {
             const dump = window.localStorage[saveName] as string;
-            this._lifeMap.loadSerializedState(dump);
+            this._mapView.loadSaveFromString(dump);
         }
     }
 

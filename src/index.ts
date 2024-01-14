@@ -16,7 +16,7 @@ onPageReady(function() {
     const lifeMap = new LifeMap(UNIVERSE_SIZE, UNIVERSE_SIZE);
     const mapView = new MapView(lifeMap);
     const game = new GameOfLife(lifeMap);
-    const saveGameController = new SaveGameController(lifeMap);
+    const saveGameController = new SaveGameController(mapView);
     const controlsView = new ControlsView({
         lifeMap,
         mapView,
