@@ -11,7 +11,7 @@
     --link-hover-color: #999;
     --link-active-color: red;
     --error-color: red;
-    --dark-background: #e6e6fa;
+    --contrast-background: #fafafa;
 
     font-size: 14px;
     font-family: -apple-system, 'BlinkMacSystemFont',
@@ -33,7 +33,7 @@
         --link-hover-color: #fff;
         --link-active-color: #f1f1f1;
         --error-color: #ffaaaa;
-        --dark-background: black;
+        --contrast-background: #000000;
     }
 }
 
@@ -99,6 +99,10 @@ a:active {
 .map-params {
     margin: 10px 0;
     overflow: hidden;
+}
+
+.map {
+    background: var(--contrast-background);
 }
 
 .help-button {

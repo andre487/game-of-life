@@ -7,16 +7,19 @@ try {
     window.reportError(e);
 }
 
-let gridFill = '#e6e6fa';
-let gridStroke = '#708090';
+let gridFill = '#616161';
+let gridStroke = '#bdbdbd';
+let gridBorderColor = '#fafafa';
 
 if (darkTheme) {
-    gridFill = '#616161';
-    gridStroke = '#eceff1';
+    gridFill = '#bdbdbd';
+    gridStroke = '#616161';
+    gridBorderColor = '#000000';
 }
 
 export default {
     darkTheme,
     gridFill,
     gridStroke,
+    gridBorderColor,
 };

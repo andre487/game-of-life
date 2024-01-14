@@ -51,8 +51,8 @@ export class MapView {
         this._canvasHeight = this._canvas.clientHeight;
 
         this._ctx = this._canvas.getContext('2d') ?? thr('Failed to create context');
-        this._ctx.fillStyle = styles.gridStroke;
-        this._ctx.strokeStyle = styles.gridFill;
+        this._ctx.fillStyle = styles.gridFill;
+        this._ctx.strokeStyle = styles.gridStroke;
 
         this._xValue = document.getElementById('map-params__item-x') ?? thr('No X value');
         this._yValue = document.getElementById('map-params__item-y') ?? thr('No Y value');
@@ -263,11 +263,17 @@ export class MapView {
         this._lifeMap.isAlive(i, j, isAlive);
         const x = Number(j - this._cellsHorizontalOffset) * this._cellWidth;
         const y = Number(i - this._cellsVerticalOffset) * this._cellHeight;
+
+        const ctx = this._ctx;
         if (isAlive) {
-            this._ctx.fillRect(x, y, this._cellWidth, this._cellHeight);
+            ctx.fillRect(x, y, this._cellWidth, this._cellHeight);
+            const baseStrokeStyle = ctx.strokeStyle;
+            ctx.strokeStyle = styles.gridBorderColor;
+            ctx.strokeRect(x, y, this._cellWidth, this._cellHeight);
+            ctx.strokeStyle = baseStrokeStyle;
         } else {
-            this._ctx.clearRect(x, y, this._cellWidth, this._cellHeight);
-            this._ctx.strokeRect(x, y, this._cellWidth, this._cellHeight);
+            ctx.clearRect(x, y, this._cellWidth, this._cellHeight);
+            ctx.strokeRect(x, y, this._cellWidth, this._cellHeight);
         }
     }
 }

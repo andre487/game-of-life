@@ -31,4 +31,8 @@ onPageReady(function() {
     controlsView.init();
 
     console.log('Game is ready!');
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        window.location.reload();
+    });
 });
