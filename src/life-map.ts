@@ -19,12 +19,12 @@ type ClVect = [string, bigint][];
 
 export class LifeMapError extends CustomError {}
 
-export function compareLifePoints(a: LifePoint, b: LifePoint): number {
-    const d = compareBigInts(a[0], b[0]);
+export function compareLifePoints(x1: bigint, x2: bigint, y1: bigint, y2: bigint): number {
+    const d = compareBigInts(x1, x2);
     if (d) {
         return d;
     }
-    return compareBigInts(a[1], b[1]);
+    return compareBigInts(y1, y2);
 }
 
 export class LifeMap {
@@ -86,7 +86,7 @@ export class LifeMap {
         /* eslint-disable guard-for-in */
         // About key iteration order: https://dev.to/frehner/the-order-of-js-object-keys-458d
         const res: LifeLocality[] = [];
-        const passedCache: CoordMatrix = obj();
+        const passedCache = new Map<bigint, Set<bigint>>();
 
         const container = this._container;
         const mapWidth = this._width;
@@ -94,29 +94,32 @@ export class LifeMap {
 
         for (const xKey in container) {
             const xVal = BigInt(xKey);
-            for (const yKey in container[xKey] ?? emptyHollowObj) {
+            for (const yKey in container[xKey]) {
                 const yVal = BigInt(yKey);
                 for (let i = xVal - 1n; i <= xVal + 1n; ++i) {
                     for (let j = yVal - 1n; j <= yVal + 1n; ++j) {
-                        const iKey = i.toString();
-                        const jKey = j.toString();
                         if (
-                            passedCache[iKey]?.[jKey] === true ||
+                            passedCache.get(i)?.has(j) === true ||
                             i < 0n || i >= mapWidth || j < 0n || j >= mapHeight
                         ) {
                             continue;
                         }
-                        (passedCache[iKey] ??= obj())[jKey] = true;
-                        res.push([iKey, jKey, i, j]);
+
+                        let curPassedLine = passedCache.get(i);
+                        if (!curPassedLine) {
+                            curPassedLine = new Set();
+                            passedCache.set(i, curPassedLine);
+                        }
+                        curPassedLine.add(j);
+
+                        res.push([i.toString(), j.toString(), i, j]);
                     }
                 }
             }
         }
-
-        res.sort((a, b) => compareLifePoints([a[2], a[3]], [b[2], b[3]]));
-
-        return res;
+        return res.sort((a, b) => compareLifePoints(a[2], b[2], a[3], b[3]));
     }
+
 
     getLifeClusters() {
         /* eslint-disable guard-for-in */
@@ -164,7 +167,7 @@ export class LifeMap {
                 const curPoint = curYMatrix[j];
                 const curYVal = curPoint[1];
                 if (curYVal - prevYVal > LifeMap.CLUSTER_TOLERANCE) {
-                    curCluster.sort(compareLifePoints);
+                    curCluster.sort((a, b) => compareLifePoints(a[0], b[0], a[1], b[1]));
                     curCluster = [];
                     clusters.push(curCluster);
                 }
@@ -173,7 +176,7 @@ export class LifeMap {
             }
 
             if (curCluster.length > 1) {
-                curCluster.sort(compareLifePoints);
+                curCluster.sort((a, b) => compareLifePoints(a[0], b[0], a[1], b[1]));
             }
 
             i += curXSiblings.length;

@@ -1,7 +1,7 @@
 import {LifeMap} from '../src/life-map';
 import {bench, generateRandomLifePoints, MAX_BIG_INT} from '../src/test-utils';
 
-bench('LifeMap.getLifeClusters()', function() {
+bench('LifeMap', function() {
     let lifeMap: LifeMap;
 
     function prepare() {
@@ -12,12 +12,12 @@ bench('LifeMap.getLifeClusters()', function() {
     }
 
     this
-        .add('Cur version', () => {
+        .add('getLifeLocalities()', () => {
+            lifeMap.getLifeLocalities();
+        })
+        .add('getLifeClusters()', () => {
             lifeMap.getLifeClusters();
         })
-        // .add('New version', () => {
-        //     lifeMap.getLifeClusters2();
-        // })
         .on('start', prepare)
         .on('cycle', prepare);
 });
