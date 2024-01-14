@@ -1,5 +1,5 @@
 import {describe, expect, it} from '@jest/globals';
-import {compareLifePoints, LifeMap, LifePoint} from './life-map';
+import {compareLifePoints, LifeLocality, LifeMap, LifePoint} from './life-map';
 import {shuffleArray} from './test-utils';
 
 describe('LifeMap', function() {
@@ -81,9 +81,9 @@ describe('LifeMap', function() {
                 lifeMap.isAlive(i, j, true);
             }
 
-            const res = lifeMap.getAliveLocalities();
+            const res = lifeMap.getLifeLocalities();
 
-            const expected = [
+            const expected = ([
                 // Cluster 1
                 [0n, 0n], [0n, 1n], [0n, 2n], [0n, 3n],
                 [1n, 0n], [1n, 1n], [1n, 2n], [1n, 3n],
@@ -117,8 +117,9 @@ describe('LifeMap', function() {
                 // Cluster 6
                 [98n, 0n], [98n, 1n], [98n, 2n],
                 [99n, 0n], [99n, 1n], [99n, 2n],
-            ] as LifePoint[];
-            expected.sort(compareLifePoints);
+            ] as LifePoint[])
+                .sort(compareLifePoints)
+                .map(([x, y]): LifeLocality => [x.toString(), y.toString(), x, y]);
 
             expect(res).toEqual(expected);
         });

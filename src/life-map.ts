@@ -14,6 +14,7 @@ export type CoordMatrix = ExtendableHollowObj<CoordVector>;
 
 export type LifePoint = [bigint, bigint];
 export type LifeCluster = LifePoint[];
+export type LifeLocality = [string, string, bigint, bigint];
 type ClVect = [string, bigint][];
 
 export class LifeMapError extends CustomError {}
@@ -81,10 +82,10 @@ export class LifeMap {
         return Boolean(this._container[keyX]?.[keyY]);
     }
 
-    getAliveLocalities() {
+    getLifeLocalities() {
         /* eslint-disable guard-for-in */
         // About key iteration order: https://dev.to/frehner/the-order-of-js-object-keys-458d
-        const res: LifePoint[] = [];
+        const res: LifeLocality[] = [];
         const passedCache: CoordMatrix = obj();
 
         const container = this._container;
@@ -106,13 +107,13 @@ export class LifeMap {
                             continue;
                         }
                         (passedCache[iKey] ??= obj())[jKey] = true;
-                        res.push([i, j]);
+                        res.push([iKey, jKey, i, j]);
                     }
                 }
             }
         }
 
-        res.sort(compareLifePoints);
+        res.sort((a, b) => compareLifePoints([a[2], a[3]], [b[2], b[3]]));
 
         return res;
     }

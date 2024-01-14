@@ -93,11 +93,11 @@ export class GameOfLife {
 
     private _runRoundAsync = (done: GeneralFn<[CoordMatrix], void>) => {
         this._roundStartTime = Date.now();
-        const aliveLocs = this._lifeMap.getAliveLocalities();
+        const aliveLocs = this._lifeMap.getLifeLocalities();
 
         const changesTable: CoordMatrix = obj();
 
-        for (const [xVal, yVal] of aliveLocs) {
+        for (const [xKey, yKey, xVal, yVal] of aliveLocs) {
             const state = this._lifeMap.isAlive(xVal, yVal);
 
             let aliveSiblings = 0;
@@ -109,8 +109,6 @@ export class GameOfLife {
                 }
             }
 
-            const xKey = xVal.toString();
-            const yKey = yVal.toString();
             if (state && !(aliveSiblings === 2 || aliveSiblings === 3)) {
                 (changesTable[xKey] ??= obj())[yKey] = false;
             } else if (!state && aliveSiblings === 3) {
