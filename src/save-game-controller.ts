@@ -11,6 +11,10 @@ export class SaveGameController {
         this._mapView = mapView;
     }
 
+    removeSave(saveName = SaveGameController.BUTTON_SAVE_NAME) {
+        delete localStorage[saveName];
+    }
+
     save(saveName = SaveGameController.BUTTON_SAVE_NAME) {
         window.localStorage[saveName] = this._mapView.getSaveString();
     }

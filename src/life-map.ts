@@ -15,6 +15,13 @@ export type CoordMatrix = ExtendableHollowObj<CoordVector>;
 export type LifePoint = [bigint, bigint];
 export type LifeLocality = LifePoint;
 
+export const DEFAULT_UNIVERSE_SIZE = 2n ** 20n;
+export const HUGE_UNIVERSE_SIZE = 2n ** 64n;
+export let universeSize = DEFAULT_UNIVERSE_SIZE;
+if (window.location.href.search(/[?&]huge-universe=1(?:&|$)/) > -1) {
+    universeSize = HUGE_UNIVERSE_SIZE;
+}
+
 export class LifeMapError extends CustomError {}
 
 export function compareLifePoints(a: LifePoint, b: LifePoint): number {
@@ -37,7 +44,7 @@ export class LifeMap {
     private _maxY = 0n;
     private _changeListeners: SimpleFn[] = [];
 
-    constructor(mapWidth: BigIntSrc, mapHeight: BigIntSrc) {
+    constructor(mapWidth: BigIntSrc = universeSize, mapHeight: BigIntSrc = universeSize) {
         this._width = BigInt(mapWidth);
         this._height = BigInt(mapHeight);
         this.reset();

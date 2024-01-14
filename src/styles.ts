@@ -1,4 +1,22 @@
-const bodyStyle = window.getComputedStyle(document.body);
+let darkTheme = false;
+try {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        darkTheme = true;
+    }
+} catch (e) {
+    window.reportError(e);
+}
 
-export const darkBackgroundColor = bodyStyle.getPropertyValue('--dark-background') ?? '#e6e6fa';
-export const defaultColor = bodyStyle.getPropertyValue('--default-color') ?? '#708090';
+let gridFill = '#e6e6fa';
+let gridStroke = '#708090';
+
+if (darkTheme) {
+    gridFill = '#616161';
+    gridStroke = '#eceff1';
+}
+
+export default {
+    darkTheme,
+    gridFill,
+    gridStroke,
+};

@@ -1,7 +1,7 @@
 import type {U} from 'ts-toolbelt';
 import type {ObjMap} from './common-types';
 import {LifeMap} from './life-map';
-import * as styles from './styles';
+import styles from './styles';
 import {bigIntMinMax, createErrorThrower, CustomError, numberFormatter, throttle} from './utils';
 
 export class MapViewError extends CustomError {}
@@ -51,8 +51,8 @@ export class MapView {
         this._canvasHeight = this._canvas.clientHeight;
 
         this._ctx = this._canvas.getContext('2d') ?? thr('Failed to create context');
-        this._ctx.fillStyle = styles.defaultColor;
-        this._ctx.strokeStyle = styles.darkBackgroundColor;
+        this._ctx.fillStyle = styles.gridStroke;
+        this._ctx.strokeStyle = styles.gridFill;
 
         this._xValue = document.getElementById('map-params__item-x') ?? thr('No X value');
         this._yValue = document.getElementById('map-params__item-y') ?? thr('No Y value');

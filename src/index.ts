@@ -6,14 +6,11 @@ import {MessagesView} from './messages-view';
 import {SaveGameController} from './save-game-controller';
 import {onPageReady} from './utils';
 
-// const UNIVERSE_SIZE = 2n ** 64n;
-const UNIVERSE_SIZE = 1024n;
-
 onPageReady(function() {
     const messagesView = new MessagesView();
     messagesView.bindToErrors();
 
-    const lifeMap = new LifeMap(UNIVERSE_SIZE, UNIVERSE_SIZE);
+    const lifeMap = new LifeMap();
     const mapView = new MapView(lifeMap);
     const game = new GameOfLife(lifeMap);
     const saveGameController = new SaveGameController(mapView);
