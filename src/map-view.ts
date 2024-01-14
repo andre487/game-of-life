@@ -15,10 +15,10 @@ export enum MapViewState {
 }
 
 export class MapView {
-    public static readonly DEFAULT_CELL_WIDTH = 10;
-    public static readonly DEFAULT_CELL_HEIGHT = 10;
-    public static readonly MIN_CELL_SIZE = 3;
-    public static readonly MAX_CELL_SIZE = 20;
+    public static readonly DEFAULT_CELL_WIDTH = 12;
+    public static readonly DEFAULT_CELL_HEIGHT = 12;
+    public static readonly MIN_CELL_SIZE = 5;
+    public static readonly MAX_CELL_SIZE = 22;
 
     private _state: MapViewState = MapViewState.Initial;
 
