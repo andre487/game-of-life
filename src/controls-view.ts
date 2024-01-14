@@ -118,5 +118,13 @@ export class ControlsView {
         this._helpCloseButton.onclick = () => {
             this._helpBlock.classList.add('help_hidden');
         };
+
+        window.addEventListener('beforeunload', () => {
+            this._saveGameController.save(SaveGameController.AUTO_SAVE_NAME);
+        });
+
+        if (this._saveGameController.doesSaveExist(SaveGameController.AUTO_SAVE_NAME)) {
+            this._saveGameController.load(SaveGameController.AUTO_SAVE_NAME);
+        }
     }
 }
