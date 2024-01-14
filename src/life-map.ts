@@ -1,4 +1,4 @@
-import {O} from 'ts-toolbelt';
+import type {O} from 'ts-toolbelt';
 import type {BigIntSrc, ExtendableHollowObj, SimpleFn, Stringable} from './common-types';
 import {call, compareBigInts, CustomError, emptyHollowObj, obj} from './utils';
 
@@ -14,6 +14,13 @@ export type CoordMatrix = ExtendableHollowObj<CoordVector>;
 
 export type LifePoint = [bigint, bigint];
 export type LifeLocality = LifePoint;
+
+export const DEFAULT_UNIVERSE_SIZE = 2n ** 20n;
+export const HUGE_UNIVERSE_SIZE = 2n ** 64n;
+export let universeSize = DEFAULT_UNIVERSE_SIZE;
+if (window.location.href.search(/[?&]huge-universe=1(?:&|$)/) > -1) {
+    universeSize = HUGE_UNIVERSE_SIZE;
+}
 
 export class LifeMapError extends CustomError {}
 
@@ -37,10 +44,18 @@ export class LifeMap {
     private _maxY = 0n;
     private _changeListeners: SimpleFn[] = [];
 
-    constructor(mapWidth: BigIntSrc, mapHeight: BigIntSrc) {
+    constructor(mapWidth: BigIntSrc = universeSize, mapHeight: BigIntSrc = universeSize) {
         this._width = BigInt(mapWidth);
         this._height = BigInt(mapHeight);
         this.reset();
+    }
+
+    static stringifySaveData(data: Stringable[]): string {
+        return data.join(';');
+    }
+
+    static parseSaveString(dump: string): string[] {
+        return dump.split(';');
     }
 
     get width(): bigint {
@@ -136,7 +151,7 @@ export class LifeMap {
         this._changeListeners.forEach(call);
     }
 
-    serialize(): string {
+    getSaveData() {
         const data: Stringable[] = [this._width, this._height, this._minX, this._maxX, this._minY, this._maxY];
 
         const coords: string[] = [];
@@ -145,11 +160,10 @@ export class LifeMap {
         }
         data.push(coords.join('|'));
 
-        return data.join(';');
+        return data;
     }
 
-    loadSerializedState(dump: string) {
-        const data = dump.split(';');
+    loadSaveData(data: string[]) {
         if (data.length < 7) {
             throw new LifeMapError('Invalid save data length');
         }
@@ -164,14 +178,15 @@ export class LifeMap {
         const container = this._container = obj();
         for (const coordData of data[6].split('|')) {
             const [keyX, yStr] = coordData.split(':');
-            const xVector = container[keyX] = obj();
+            if (!keyX || !yStr) {
+                continue;
+            }
 
+            const xVector = container[keyX] = obj();
             for (const keyY of yStr.split(',')) {
                 xVector[keyY] = true;
             }
         }
-
-        this._changeListeners.forEach(call);
     }
 
     private _setStatusToContainer(bigX: bigint, bigY: bigint, status: boolean) {

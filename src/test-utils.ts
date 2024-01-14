@@ -1,5 +1,5 @@
 import Benchmark from 'benchmark';
-import {LifePoint} from './life-map';
+import type {LifePoint} from './life-map';
 
 export const MAX_BIG_INT = 2n ** 64n;
 export const MAX_SAFE_BIG_INT = BigInt(Number.MAX_SAFE_INTEGER);

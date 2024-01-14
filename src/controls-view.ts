@@ -37,6 +37,8 @@ export class ControlsView {
     private _helpCloseButton: HTMLButtonElement;
     private _helpBlock: HTMLElement;
 
+    private _disableAutosave = false;
+
     constructor(params: ControlsViewParams) {
         this._lifeMap = params.lifeMap;
         this._mapView = params.mapView;
@@ -58,6 +60,13 @@ export class ControlsView {
     }
 
     init() {
+        window.addEventListener('click', (e) => {
+            if (e.target === this._resetButton) {
+                return;
+            }
+            this._disableAutosave = false;
+        });
+
         this._game.onStart(() => {
             this._startButton.setAttribute('disabled', '');
             this._stopButton.removeAttribute('disabled');
@@ -107,8 +116,9 @@ export class ControlsView {
         }
 
         this._resetButton.onclick = () => {
-            this._lifeMap.reset();
-            this._mapView.renderWhenFrame();
+            this._disableAutosave = true;
+            this._saveGameController.removeSave(SaveGameController.AUTO_SAVE_NAME);
+            window.location.reload();
         };
 
         this._helpShowButton.onclick = () => {
@@ -118,5 +128,16 @@ export class ControlsView {
         this._helpCloseButton.onclick = () => {
             this._helpBlock.classList.add('help_hidden');
         };
+
+        window.addEventListener('beforeunload', () => {
+            if (this._disableAutosave) {
+                return;
+            }
+            this._saveGameController.save(SaveGameController.AUTO_SAVE_NAME);
+        });
+
+        if (this._saveGameController.doesSaveExist(SaveGameController.AUTO_SAVE_NAME)) {
+            this._saveGameController.load(SaveGameController.AUTO_SAVE_NAME);
+        }
     }
 }
