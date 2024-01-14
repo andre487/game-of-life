@@ -97,7 +97,7 @@ export class GameOfLife {
 
         const changesTable: CoordMatrix = obj();
 
-        for (const [xKey, yKey, xVal, yVal] of aliveLocs) {
+        for (const [xVal, yVal] of aliveLocs) {
             const state = this._lifeMap.isAlive(xVal, yVal);
 
             let aliveSiblings = 0;
@@ -110,9 +110,9 @@ export class GameOfLife {
             }
 
             if (state && !(aliveSiblings === 2 || aliveSiblings === 3)) {
-                (changesTable[xKey] ??= obj())[yKey] = false;
+                (changesTable[xVal.toString()] ??= obj())[yVal.toString()] = false;
             } else if (!state && aliveSiblings === 3) {
-                (changesTable[xKey] ??= obj())[yKey] = true;
+                (changesTable[xVal.toString()] ??= obj())[yVal.toString()] = true;
             }
         }
 

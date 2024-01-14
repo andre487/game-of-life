@@ -13,16 +13,16 @@ export type CoordVector = ExtendableHollowObj<boolean>;
 export type CoordMatrix = ExtendableHollowObj<CoordVector>;
 
 export type LifePoint = [bigint, bigint];
-export type LifeLocality = [string, string, bigint, bigint];
+export type LifeLocality = LifePoint;
 
 export class LifeMapError extends CustomError {}
 
-export function compareLifePoints(x1: bigint, x2: bigint, y1: bigint, y2: bigint): number {
-    const d = compareBigInts(x1, x2);
+export function compareLifePoints(a: LifePoint, b: LifePoint): number {
+    const d = compareBigInts(a[0], b[0]);
     if (d) {
         return d;
     }
-    return compareBigInts(y1, y2);
+    return compareBigInts(a[1], b[1]);
 }
 
 export class LifeMap {
@@ -108,12 +108,12 @@ export class LifeMap {
                         }
                         curPassedLine.add(j);
 
-                        res.push([i.toString(), j.toString(), i, j]);
+                        res.push([i, j]);
                     }
                 }
             }
         }
-        return res.sort((a, b) => compareLifePoints(a[2], b[2], a[3], b[3]));
+        return res.sort(compareLifePoints);
     }
 
     addChangeListener(listener: SimpleFn) {

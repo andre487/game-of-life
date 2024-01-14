@@ -1,5 +1,5 @@
 import {describe, expect, it} from '@jest/globals';
-import {compareLifePoints, LifeLocality, LifeMap, LifePoint} from './life-map';
+import {compareLifePoints, LifeLocality, LifeMap} from './life-map';
 import {shuffleArray} from './test-utils';
 
 describe('LifeMap', function() {
@@ -118,9 +118,8 @@ describe('LifeMap', function() {
                 [98, 0], [98, 1], [98, 2],
                 [99, 0], [99, 1], [99, 2],
             ]
-                .map((p): LifePoint => [BigInt(p[0]), BigInt(p[1])])
-                .sort((a, b) => compareLifePoints(a[0], b[0], a[1], b[1]))
-                .map(([x, y]): LifeLocality => [x.toString(), y.toString(), x, y]);
+                .map((p): LifeLocality => [BigInt(p[0]), BigInt(p[1])])
+                .sort(compareLifePoints);
 
             expect(res).toEqual(expected);
         });
