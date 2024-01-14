@@ -1,6 +1,6 @@
 import {describe, expect, it} from '@jest/globals';
 import type {U} from 'ts-toolbelt';
-import {createErrorThrower, enterValueToInterval, onNextTick, onPageReady, throwError} from './utils';
+import {createErrorThrower, onNextTick, onPageReady, throwError} from './utils';
 
 describe('onNextTick()', function() {
     it('should run callback', async function() {
@@ -82,20 +82,5 @@ describe('createErrorThrower()', function() {
         expect(errorInstance).toBeInstanceOf(CustomError);
         expect(errorInstance?.toString()).toBe('CustomError: Test');
         expect(errorInstance?.name).toBe('CustomError');
-    });
-});
-
-describe('enterValueToInterval()', function() {
-    it('should enter a value to the interval when 0 <= x < max', function() {
-        expect(enterValueToInterval(100, 250)).toBe(100n);
-    });
-
-    it('should enter a value to the interval when x < 0', function() {
-        expect(enterValueToInterval(-100, 250)).toBe(150n);
-    });
-
-    it('should enter a value to the interval when x >= max', function() {
-        expect(enterValueToInterval(350, 250)).toBe(100n);
-        expect(enterValueToInterval(250, 250)).toBe(0n);
     });
 });

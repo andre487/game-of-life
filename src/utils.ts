@@ -1,4 +1,6 @@
-import {BigIntSrc, ErrorClass, ExtendableHollowObj, GeneralFn, SimpleFn} from './common-types';
+import type {BigIntSrc, ErrorClass, ExtendableHollowObj, GeneralFn, SimpleFn} from './common-types';
+
+export const emptyHollowObj: Readonly<ExtendableHollowObj<never>> = obj();
 
 export class CustomError extends Error {
     constructor(message?: string) {
@@ -8,8 +10,8 @@ export class CustomError extends Error {
     }
 }
 
-export function obj<T extends ExtendableHollowObj>(): T {
-    return Object.create(null) as T;
+export function obj<T>(): ExtendableHollowObj<T> {
+    return Object.create(null) as ExtendableHollowObj<T>;
 }
 
 export function call(func: SimpleFn) {
@@ -49,17 +51,6 @@ export function createErrorThrower(ErrCls: ErrorClass) {
     };
 }
 
-export function enterValueToInterval(val: BigIntSrc, max: BigIntSrc): bigint {
-    let res = BigInt(val);
-    const bigMax = BigInt(max);
-    if (res < 0n) {
-        res = bigMax + res;
-    } else if (res >= bigMax) {
-        res = res % bigMax;
-    }
-    return res;
-}
-
 export function bigIntMinMax(val: bigint, min: bigint, max: bigint): bigint {
     let res = val;
     if (res < min) {
@@ -69,6 +60,17 @@ export function bigIntMinMax(val: bigint, min: bigint, max: bigint): bigint {
         res = max;
     }
     return res;
+}
+
+export function compareBigInts(a: BigIntSrc, b: BigIntSrc): number {
+    const d = BigInt(a) - BigInt(b);
+    if (d > 0n) {
+        return 1;
+    }
+    if (d < 0n) {
+        return -1;
+    }
+    return 0;
 }
 
 type ThrottledFunction<T extends unknown[]> = GeneralFn<[T], void>;
@@ -98,4 +100,4 @@ export function throttle<T extends unknown[]>(func: ThrottledFunction<T>, time: 
     };
 }
 
-export const numberFormatter = new Intl.NumberFormat(navigator.language);
+export const numberFormatter = new Intl.NumberFormat(globalThis?.navigator?.language ?? 'en-US');

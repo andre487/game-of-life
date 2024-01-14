@@ -24,6 +24,13 @@ module.exports = {
             files: ['.eslintrc.{js,cjs}'],
             extends: ['plugin:@typescript-eslint/disable-type-checked'],
         },
+        {
+            files: ['src/test-utils.ts', 'perf/*', '**/*.test.ts'],
+            rules: {
+                'no-invalid-this': 0,
+                'max-len': 0,
+            },
+        },
     ],
     ignorePatterns: [
         'dist/*',

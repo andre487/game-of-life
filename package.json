@@ -7,7 +7,8 @@
     "start": "parcel",
     "build": "./scripts/build.sh",
     "lint": "eslint .",
-    "test": "eslint . && jest ."
+    "test": "eslint . && jest .",
+    "perf": "ts-node perf/index.ts"
   },
   "repository": {
     "type": "git",
@@ -24,8 +25,10 @@
   "homepage": "https://github.com/andre487/game-of-life#readme",
   "devDependencies": {
     "@parcel/transformer-typescript-tsc": "^2.11.0",
+    "@types/benchmark": "^2.1.5",
     "@typescript-eslint/eslint-plugin": "^6.18.0",
     "@typescript-eslint/parser": "^6.18.0",
+    "benchmark": "^2.1.4",
     "eslint": "^8.56.0",
     "eslint-config-google": "^0.14.0",
     "husky": "^8.0.3",
@@ -33,6 +36,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "parcel": "^2.11.0",
     "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.2",
     "ts-toolbelt": "^9.6.0",
     "typescript": "^5.3.3"
   }
