@@ -1,4 +1,3 @@
-/* eslint-disable guard-for-in */
 import {O} from 'ts-toolbelt';
 import type {BigIntSrc, ExtendableHollowObj, SimpleFn, Stringable} from './common-types';
 import {call, compareBigInts, CustomError, emptyHollowObj, enterValueToInterval, obj} from './utils';
@@ -83,6 +82,7 @@ export class LifeMap {
     }
 
     getLifeClusters() {
+        /* eslint-disable guard-for-in */
         // About key iteration order: https://dev.to/frehner/the-order-of-js-object-keys-458d
         const xVector: ClVect = [];
         for (const xKey in this._container) {
@@ -100,10 +100,9 @@ export class LifeMap {
             const curXVal = curXData[1];
             const curXSiblings: ClVect = [curXData];
 
-            let otherIdx = i + 1;
             let prevXVal = curXVal;
-            while (otherIdx < xCount) {
-                const otherXData = xVector[otherIdx++];
+            for (let j = i + 1; j < xCount; ++j) {
+                const otherXData = xVector[j];
                 const otherXVal = otherXData[1];
                 if (otherXVal - prevXVal > LifeMap.CLUSTER_TOLERANCE) {
                     break;
