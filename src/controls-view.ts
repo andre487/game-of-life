@@ -118,8 +118,7 @@ export class ControlsView {
         this._resetButton.onclick = () => {
             this._disableAutosave = true;
             this._saveGameController.removeSave(SaveGameController.AUTO_SAVE_NAME);
-            this._lifeMap.reset();
-            this._mapView.renderWhenFrame();
+            window.location.reload();
         };
 
         this._helpShowButton.onclick = () => {
