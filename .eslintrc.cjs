@@ -28,6 +28,7 @@ module.exports = {
             files: ['src/test-utils.ts', 'perf/*', '**/*.test.ts'],
             rules: {
                 'no-invalid-this': 0,
+                'max-len': 0,
             },
         },
     ],

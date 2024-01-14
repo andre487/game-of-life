@@ -18,7 +18,7 @@ type ClVect = [string, bigint][];
 
 export class LifeMapError extends CustomError {}
 
-function compareLifePoints(a: LifePoint, b: LifePoint): number {
+export function compareLifePoints(a: LifePoint, b: LifePoint): number {
     const d = compareBigInts(a[0], b[0]);
     if (d) {
         return d;
@@ -79,6 +79,42 @@ export class LifeMap {
         const keyY = bigY.toString();
 
         return Boolean(this._container[keyX]?.[keyY]);
+    }
+
+    getAliveLocalities() {
+        /* eslint-disable guard-for-in */
+        // About key iteration order: https://dev.to/frehner/the-order-of-js-object-keys-458d
+        const res: LifePoint[] = [];
+        const passedCache: CoordMatrix = obj();
+
+        const container = this._container;
+        const mapWidth = this._width;
+        const mapHeight = this._height;
+
+        for (const xKey in container) {
+            const xVal = BigInt(xKey);
+            for (const yKey in container[xKey] ?? emptyHollowObj) {
+                const yVal = BigInt(yKey);
+                for (let i = xVal - 1n; i <= xVal + 1n; ++i) {
+                    for (let j = yVal - 1n; j <= yVal + 1n; ++j) {
+                        const iKey = i.toString();
+                        const jKey = j.toString();
+                        if (
+                            passedCache[iKey]?.[jKey] === true ||
+                            i < 0n || i >= mapWidth || j < 0n || j >= mapHeight
+                        ) {
+                            continue;
+                        }
+                        (passedCache[iKey] ??= obj())[jKey] = true;
+                        res.push([i, j]);
+                    }
+                }
+            }
+        }
+
+        res.sort(compareLifePoints);
+
+        return res;
     }
 
     getLifeClusters() {

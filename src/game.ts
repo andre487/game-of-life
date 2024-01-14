@@ -1,7 +1,7 @@
 import type {GeneralFn, SimpleFn} from './common-types';
 import type {CoordMatrix} from './life-map';
 import {LifeMap} from './life-map';
-import {call, obj, onNextTick} from './utils';
+import {call, emptyHollowObj, obj, onNextTick} from './utils';
 
 export enum GameOfLifeState {
     Stopped = 'Stopped',
@@ -50,8 +50,8 @@ export class GameOfLife {
         const onRoundComplete = (changesTable: CoordMatrix) => {
             let changed = false;
             for (const [keyX, yVector] of Object.entries(changesTable)) {
-                for (const [keyY, state] of Object.entries(yVector)) {
-                    this._lifeMap.isAlive(keyX, keyY, state);
+                for (const [keyY, state] of Object.entries(yVector ?? emptyHollowObj)) {
+                    this._lifeMap.isAlive(keyX, keyY, state ?? false);
                     changed = true;
                 }
             }
@@ -93,34 +93,28 @@ export class GameOfLife {
 
     private _runRoundAsync = (done: GeneralFn<[CoordMatrix], void>) => {
         this._roundStartTime = Date.now();
-        const populated = this._lifeMap.populatedRect;
+        const aliveLocs = this._lifeMap.getAliveLocalities();
+
         const changesTable: CoordMatrix = obj();
 
-        for (let popI = populated.top; popI <= populated.bottom; ++popI) {
-            for (let popJ = populated.left; popJ <= populated.right; ++popJ) {
-                const state = this._lifeMap.isAlive(popI, popJ);
+        for (const [xVal, yVal] of aliveLocs) {
+            const state = this._lifeMap.isAlive(xVal, yVal);
 
-                let aliveSiblings = 0;
-                for (let i = -1; i <= 1; ++i) {
-                    for (let j = -1; j <= 1; ++j) {
-                        if (!(i === 0 && j === 0)) {
-                            const curI = popI + BigInt(i);
-                            const curJ = popJ + BigInt(j);
-                            aliveSiblings += this._lifeMap.isAlive(curI, curJ) ? 1 : 0;
-                        }
+            let aliveSiblings = 0;
+            for (let i = xVal - 1n; i <= xVal + 1n; ++i) {
+                for (let j = yVal - 1n; j <= yVal + 1n; ++j) {
+                    if (!(i === xVal && j === yVal)) {
+                        aliveSiblings += this._lifeMap.isAlive(i, j) ? 1 : 0;
                     }
                 }
+            }
 
-                const keyI = popI.toString();
-                const keyJ = popJ.toString();
-
-                if (state && !(aliveSiblings === 2 || aliveSiblings === 3)) {
-                    changesTable[keyI] ??= obj();
-                    changesTable[keyI][keyJ] = false;
-                } else if (!state && aliveSiblings === 3) {
-                    changesTable[keyI] ??= obj();
-                    changesTable[keyI][keyJ] = true;
-                }
+            const xKey = xVal.toString();
+            const yKey = yVal.toString();
+            if (state && !(aliveSiblings === 2 || aliveSiblings === 3)) {
+                (changesTable[xKey] ??= obj())[yKey] = false;
+            } else if (!state && aliveSiblings === 3) {
+                (changesTable[xKey] ??= obj())[yKey] = true;
             }
         }
 
