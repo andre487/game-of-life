@@ -167,8 +167,7 @@ export class LifeMap {
 
         const coords: string[] = [];
         for (const [keyX, vector] of Object.entries(this._container)) {
-            coords.push(`${keyX}:${Object.keys(vector ?? emptyHollowObj)
-                .join(',')}`);
+            coords.push(`${keyX}:${Object.keys(vector ?? emptyHollowObj).join(',')}`);
         }
         data.push(coords.join('|'));
 
