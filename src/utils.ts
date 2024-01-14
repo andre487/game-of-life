@@ -51,17 +51,6 @@ export function createErrorThrower(ErrCls: ErrorClass) {
     };
 }
 
-export function enterValueToInterval(val: BigIntSrc, max: BigIntSrc): bigint {
-    let res = BigInt(val);
-    const bigMax = BigInt(max);
-    if (res < 0n) {
-        res = bigMax + res;
-    } else if (res >= bigMax) {
-        res = res % bigMax;
-    }
-    return res;
-}
-
 export function bigIntMinMax(val: bigint, min: bigint, max: bigint): bigint {
     let res = val;
     if (res < min) {

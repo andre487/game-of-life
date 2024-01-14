@@ -1,6 +1,6 @@
 import {O} from 'ts-toolbelt';
 import type {BigIntSrc, ExtendableHollowObj, SimpleFn, Stringable} from './common-types';
-import {call, compareBigInts, CustomError, emptyHollowObj, enterValueToInterval, obj} from './utils';
+import {call, compareBigInts, CustomError, emptyHollowObj, obj} from './utils';
 
 export interface PopulatedRect {
     top: bigint;
@@ -65,15 +65,19 @@ export class LifeMap {
     }
 
     isAlive(x: BigIntSrc, y: BigIntSrc, status?: boolean) {
-        const bigX = enterValueToInterval(x, this._width);
-        const bigY = enterValueToInterval(y, this._height);
+        x = BigInt(x);
+        y = BigInt(y);
 
-        if (status !== undefined) {
-            this._setStatusToContainer(bigX, bigY, status);
+        if (x < 0n || x >= this._width || y < 0n || y >= this._height) {
+            return false;
         }
 
-        const keyX = bigX.toString();
-        const keyY = bigY.toString();
+        if (status !== undefined) {
+            this._setStatusToContainer(x, y, status);
+        }
+
+        const keyX = x.toString();
+        const keyY = y.toString();
 
         return Boolean(this._container[keyX]?.[keyY]);
     }
@@ -171,10 +175,6 @@ export class LifeMap {
     }
 
     private _setStatusToContainer(bigX: bigint, bigY: bigint, status: boolean) {
-        if (bigX >= this._width || bigX < 0n || bigY >= this._height || bigY < 0n) {
-            return;
-        }
-
         const keyX = bigX.toString();
         const keyY = bigY.toString();
 
