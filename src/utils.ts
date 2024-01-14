@@ -1,6 +1,6 @@
-import {BigIntSrc, ErrorClass, ExtendableHollowObj, GeneralFn, SimpleFn} from './common-types';
+import type {BigIntSrc, ErrorClass, ExtendableHollowObj, GeneralFn, SimpleFn} from './common-types';
 
-export const emptyHollowObj = obj<never>();
+export const emptyHollowObj: Readonly<ExtendableHollowObj<never>> = obj();
 
 export class CustomError extends Error {
     constructor(message?: string) {
@@ -84,16 +84,6 @@ export function compareBigInts(a: BigIntSrc, b: BigIntSrc): number {
     return 0;
 }
 
-export function shuffleArray<T extends unknown[]>(arr: T): T {
-    let curIndex = arr.length;
-    while (curIndex > 0) {
-        const randIndex = Math.floor(Math.random() * curIndex);
-        --curIndex;
-        [arr[curIndex], arr[randIndex]] = [arr[randIndex], arr[curIndex]];
-    }
-    return arr;
-}
-
 type ThrottledFunction<T extends unknown[]> = GeneralFn<[T], void>;
 type ThrottledArgType<T> = T extends (infer G)[] ? G : never;
 type ThrottleResultFunction<T> = GeneralFn<[ThrottledArgType<T>], void>;
@@ -121,4 +111,4 @@ export function throttle<T extends unknown[]>(func: ThrottledFunction<T>, time: 
     };
 }
 
-export const numberFormatter = new Intl.NumberFormat(navigator.language);
+export const numberFormatter = new Intl.NumberFormat(globalThis?.navigator?.language ?? 'en-US');

@@ -1,6 +1,6 @@
 import {describe, expect, it} from '@jest/globals';
 import {LifeMap} from './life-map';
-import {shuffleArray} from './utils';
+import {shuffleArray} from './test-utils';
 
 describe('LifeMap', function() {
     describe('constructor()', function() {
@@ -51,7 +51,7 @@ describe('LifeMap', function() {
     });
 
     describe('getLifeClusters()', () => {
-        it('should work', () => {
+        it('should find clusters', () => {
             const lifeMap = new LifeMap(100, 100);
 
             const aliveCells = shuffleArray([

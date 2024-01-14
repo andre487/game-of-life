@@ -1,6 +1,7 @@
+/* eslint-disable guard-for-in */
 import {O} from 'ts-toolbelt';
 import type {BigIntSrc, ExtendableHollowObj, SimpleFn, Stringable} from './common-types';
-import {call, compareBigInts, CustomError, enterValueToInterval, emptyHollowObj, obj} from './utils';
+import {call, compareBigInts, CustomError, emptyHollowObj, enterValueToInterval, obj} from './utils';
 
 export interface PopulatedRect {
     top: bigint;
@@ -83,7 +84,11 @@ export class LifeMap {
 
     getLifeClusters() {
         // About key iteration order: https://dev.to/frehner/the-order-of-js-object-keys-458d
-        const xVector: ClVect = Object.keys(this._container).map((x) => [x, BigInt(x)]);
+        const xVector: ClVect = [];
+        for (const xKey in this._container) {
+            xVector.push([xKey, BigInt(xKey)]);
+        }
+
         if (!xVector.length) {
             return [];
         }
@@ -107,13 +112,13 @@ export class LifeMap {
                 curXSiblings.push(otherXData);
             }
 
-            const curYMatrix = curXSiblings
-                .flatMap(([xKey, xVal]) => {
-                    return Object
-                        .keys(this._container[xKey] ?? emptyHollowObj)
-                        .map((y): LifePoint => [xVal, BigInt(y)]);
-                })
-                .sort((a, b) => compareBigInts(a[1], b[1]));
+            const curYMatrix: LifePoint[] = [];
+            for (const [xKey, xVal] of curXSiblings) {
+                for (const yKey in this._container[xKey]) {
+                    curYMatrix.push([xVal, BigInt(yKey)]);
+                }
+            }
+            curYMatrix.sort((a, b) => compareBigInts(a[1], b[1]));
 
             let curCluster: LifeCluster = [curYMatrix[0]];
             clusters.push(curCluster);
