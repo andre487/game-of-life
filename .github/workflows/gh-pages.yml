@@ -22,5 +22,5 @@ jobs:
         uses: andre487/publish-to-orphan-gh-pages@v1.2.4
         with:
           src_dir: ./dist
-          important_files: '["CNAME", "classical-version"]'
+          important_files: '["CNAME", "classical-version", "robots.txt"]'
           deploy_private_key: ${{ secrets.GH_PAGES_DEPLOY_PRIVATE_KEY }}
