@@ -313,11 +313,11 @@ class MapViewNavigationHandler {
         this._onKeyThrottled = throttle(this._onKey, MapViewNavigationHandler.KEY_TIMEOUT);
 
         const canvas = this._mapView.canvas;
-        canvas.addEventListener('mousewheel', this._onScrollThrottled as EventListener);
-        canvas.addEventListener('mousewheel', this._onZoomThrottled as EventListener);
         canvas.addEventListener('mouseenter', this._lockPointer);
         canvas.addEventListener('mouseleave', this._unlockPointer);
-        canvas.addEventListener('mousewheel', this._defaultPreventer);
+        canvas.addEventListener('wheel', this._onScrollThrottled as EventListener);
+        canvas.addEventListener('wheel', this._onZoomThrottled as EventListener);
+        canvas.addEventListener('wheel', this._defaultPreventer);
 
         window.addEventListener('keydown', this._onKeyThrottled as EventListener);
         window.addEventListener('keydown', this._defaultPreventer);
