@@ -26,8 +26,8 @@
   "devDependencies": {
     "@parcel/transformer-typescript-tsc": "^2.11.0",
     "@types/benchmark": "^2.1.5",
-    "@typescript-eslint/eslint-plugin": "^6.18.0",
-    "@typescript-eslint/parser": "^6.18.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
     "benchmark": "^2.1.4",
     "eslint": "^8.56.0",
     "eslint-config-google": "^0.14.0",
