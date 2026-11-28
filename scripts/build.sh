@@ -5,4 +5,4 @@ rm -rf dist
 parcel build --public-url './' --no-cache
 cp -r src dist/
 cp src/favicon.ico dist/
-cp -R archive/. dist/
+cp -R archive/classical-version root-files/. dist/
