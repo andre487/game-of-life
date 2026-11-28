@@ -20,10 +20,6 @@ jobs:
         run: npm test
       - name: Build site
         run: npm run build
-      - name: Include existing site files
-        run: |
-          git fetch --depth=1 origin gh-pages
-          git archive FETCH_HEAD CNAME classical-version robots.txt | tar -x -C dist
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
