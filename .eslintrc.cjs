@@ -33,6 +33,7 @@ module.exports = {
         },
     ],
     ignorePatterns: [
+        'archive/*',
         'dist/*',
     ],
     rules: {
